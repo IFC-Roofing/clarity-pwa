@@ -314,7 +314,7 @@ body {
 
 /* Bubble */
 .bubble {
-  max-width: min(72%, 290px);
+  max-width: min(82%, 340px);
   padding: 9px 14px; font-size: 15px; line-height: 1.45;
   word-break: break-word; white-space: pre-wrap;
 }
@@ -324,6 +324,65 @@ body {
 /* Received */
 .bubble.received { background: #1c1c1e; color: #fff; border-radius: 18px; align-self: flex-start; }
 .bubble.received.tail { border-radius: 18px 18px 18px 5px; }
+
+/* ── Rich HTML in assistant bubbles (IFC-733) ────────────── */
+.bubble.received { white-space: normal; }
+.bubble.received h3,
+.bubble.received h4 {
+  font-size: 14px; font-weight: 700; color: #fff;
+  margin: 10px 0 5px; line-height: 1.3;
+}
+.bubble.received h3:first-child,
+.bubble.received h4:first-child { margin-top: 0; }
+.bubble.received p { margin: 0 0 8px; line-height: 1.5; }
+.bubble.received p:last-child { margin-bottom: 0; }
+.bubble.received ul,
+.bubble.received ol { padding-left: 18px; margin: 6px 0 8px; }
+.bubble.received li  { margin-bottom: 4px; line-height: 1.45; }
+.bubble.received li:last-child { margin-bottom: 0; }
+.bubble.received table {
+  width: 100%; border-collapse: collapse;
+  font-size: 12px; margin: 8px 0; overflow: hidden;
+}
+.bubble.received th,
+.bubble.received td {
+  padding: 6px 8px; text-align: left;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  vertical-align: top;
+}
+.bubble.received th {
+  font-weight: 600; color: #8e8e93;
+  background: rgba(255,255,255,0.06);
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px;
+}
+.bubble.received tr:last-child td { border-bottom: none; }
+.bubble.received strong,
+.bubble.received b { font-weight: 700; }
+.bubble.received em,
+.bubble.received i  { font-style: italic; }
+
+/* Resource deep links */
+a.resource-link {
+  color: #5AC8FA; text-decoration: none; font-weight: 500;
+  border-bottom: 1px solid rgba(90,200,250,0.3);
+  -webkit-tap-highlight-color: transparent;
+}
+a.resource-link:active { opacity: 0.65; }
+
+/* Trade-tag pills */
+.trade-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  background: rgba(0,122,255,0.18);
+  color: #5AC8FA;
+  border: 1px solid rgba(90,200,250,0.28);
+  border-radius: 10px;
+  font-size: 12px; font-weight: 600;
+  letter-spacing: 0.1px;
+  margin: 1px 3px 1px 0;
+  vertical-align: middle;
+  white-space: nowrap;
+}
 
 /* Sender name above first bubble in group */
 .msg-sender-name {
@@ -882,7 +941,8 @@ body {
 
 <script>
 /* ═══════════════════════════════════════════════════════════
-   Clarity PWA — Phase 5: Google SSO Login (IFC-678)
+   Clarity PWA — Phase 7: Rich HTML rendering + resource links (IFC-733)
+   Phase 5: Google SSO Login (IFC-678)
    • Login: Google Identity Services → signInUser mutation
    • Auth:  JWT Bearer token stored in localStorage
    • API:   all calls via /api/user-graphql (Authorization header)
@@ -944,6 +1004,7 @@ async function gql(query, variables = {}, useAuth = true) {
 }
 
 /* ── HTML → plain text (strip tags + decode entities) ───── */
+/* Used for list previews & user-message safety check only  */
 function stripHtml(html) {
   if (!html) return '';
   // Remove inline-actions, cite markers, resource-link wrappers
@@ -957,6 +1018,126 @@ function stripHtml(html) {
   const ta = document.createElement('textarea');
   ta.innerHTML = text;
   return ta.value.trim();
+}
+
+/* ── Sanitize & enrich assistant HTML (IFC-733) ─────────── */
+/* Whitelist safe tags; convert resource-link data attrs to  */
+/* app.ifcroofing.com deep links; style trade tags as pills. */
+const ALLOWED_TAGS = new Set([
+  'h1','h2','h3','h4','h5','h6',
+  'p','br','hr',
+  'ul','ol','li',
+  'table','thead','tbody','tr','th','td',
+  'strong','b','em','i','u','s','code','pre',
+  'a','span','div',
+]);
+const ALLOWED_ATTRS = new Set(['href','target','rel','class','style','colspan','rowspan']);
+
+function sanitizeHtml(rawHtml) {
+  if (!rawHtml) return '';
+
+  // 1. Remove noise elements
+  let html = rawHtml
+    .replace(/<div class="inline-actions-container">[\s\S]*?<\/div>/gi, '')
+    .replace(/<sup class="cite-marker"[^>]*>.*?<\/sup>/gi, '');
+
+  // 2. Parse into a sandboxed document fragment
+  const template = document.createElement('template');
+  template.innerHTML = html;
+  const frag = template.content;
+
+  // 3. Walk every element and scrub disallowed tags / attrs
+  function walk(node) {
+    const children = [...node.childNodes];
+    children.forEach(child => {
+      if (child.nodeType === Node.ELEMENT_NODE) {
+        const tag = child.tagName.toLowerCase();
+
+        // Convert resource-link spans → real <a> elements first
+        if (tag === 'span' && child.hasAttribute('data-resource-type')) {
+          const resType  = child.getAttribute('data-resource-type') || '';
+          const resId    = child.getAttribute('data-resource-id')   || '';
+          const label    = child.textContent.trim() || resType;
+          const url      = buildResourceUrl(resType, resId);
+          const a        = document.createElement('a');
+          a.href         = url;
+          a.target       = '_blank';
+          a.rel          = 'noopener noreferrer';
+          a.className    = 'resource-link';
+          a.textContent  = label;
+          child.replaceWith(a);
+          return; // already replaced — no need to descend
+        }
+
+        // Convert trade-tag spans → pill spans
+        if (tag === 'span' && (child.getAttribute('data-type') === 'trade-tag' || /trade-tag/i.test(child.className))) {
+          const pill     = document.createElement('span');
+          pill.className = 'trade-pill';
+          pill.textContent = child.textContent.trim();
+          child.replaceWith(pill);
+          return;
+        }
+
+        // Strip disallowed tags (keep children)
+        if (!ALLOWED_TAGS.has(tag)) {
+          const parent = child.parentNode;
+          while (child.firstChild) parent.insertBefore(child.firstChild, child);
+          parent.removeChild(child);
+          return;
+        }
+
+        // Scrub disallowed attributes
+        const attrs = [...child.attributes];
+        attrs.forEach(attr => {
+          if (!ALLOWED_ATTRS.has(attr.name)) {
+            child.removeAttribute(attr.name);
+          }
+        });
+
+        // Enforce safe hrefs on <a>
+        if (tag === 'a') {
+          const href = child.getAttribute('href') || '';
+          if (!/^https?:\/\//i.test(href) && !href.startsWith('/')) {
+            child.removeAttribute('href');
+          }
+          child.setAttribute('target', '_blank');
+          child.setAttribute('rel', 'noopener noreferrer');
+          if (!child.className) child.className = 'resource-link';
+        }
+
+        walk(child);
+      }
+    });
+  }
+
+  walk(frag);
+
+  // 4. Serialize back to string
+  const div = document.createElement('div');
+  div.appendChild(frag.cloneNode(true));
+  return div.innerHTML;
+}
+
+/* ── Build deep link URL for a given resource type + id ─── */
+function buildResourceUrl(type, id) {
+  const base = 'https://app.ifcroofing.com';
+  const t = (type || '').toLowerCase().replace(/\s+/g, '-');
+  if (!id) return base;
+  // Map known resource types to their app routes
+  const routes = {
+    project:       `${base}/projects/${id}`,
+    contact:       `${base}/contacts/${id}`,
+    user:          `${base}/users/${id}`,
+    task:          `${base}/tasks/${id}`,
+    ticket:        `${base}/tickets/${id}`,
+    estimate:      `${base}/estimates/${id}`,
+    invoice:       `${base}/invoices/${id}`,
+    supplement:    `${base}/supplements/${id}`,
+    'chat-room':   `${base}/chat/${id}`,
+    chatroom:      `${base}/chat/${id}`,
+    room:          `${base}/chat/${id}`,
+  };
+  return routes[t] || `${base}/${t}s/${id}`;
 }
 
 /* ── Relative timestamp ──────────────────────────────────── */
@@ -1437,8 +1618,10 @@ function renderMessages(msgs) {
   let lastRole = null;
 
   sorted.forEach((msg, i) => {
-    const role    = msg.role === 'assistant' ? 'received' : 'sent';
-    const plain   = stripHtml(msg.content);
+    const role      = msg.role === 'assistant' ? 'received' : 'sent';
+    const isAssist  = role === 'received';
+    // For visibility checks use plain text; for rendering use sanitized HTML
+    const plain     = stripHtml(msg.content);
     if (!plain) return;
 
     // Date divider — show if first message or >30 min gap
@@ -1477,7 +1660,13 @@ function renderMessages(msgs) {
 
     const bubble = document.createElement('div');
     bubble.className = `bubble ${role}${isLast ? ' tail' : ''}`;
-    bubble.textContent = plain;
+    if (isAssist) {
+      // Assistant messages: render sanitized HTML with rich formatting
+      bubble.innerHTML = sanitizeHtml(msg.content);
+    } else {
+      // User messages: always plain text — never render HTML
+      bubble.textContent = plain;
+    }
     row.appendChild(bubble);
 
     msgContent.appendChild(row);

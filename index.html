@@ -1229,7 +1229,7 @@ function renderList(projects) {
         <div class="chat-preview">${escHtml(preview.slice(0, 80))}</div>
       </div>
       <button class="pin-btn${pinned ? ' pinned' : ''}" data-project-id="${p.id}" title="${pinned ? 'Unpin' : 'Pin to top'}">
-        ${pinned ? '📌' : '·'}
+        📌
       </button>`;
 
     // Pin button — stop propagation so it doesn't open chat

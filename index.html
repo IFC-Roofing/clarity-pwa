@@ -1483,6 +1483,7 @@ function getMostRecentMsgId() {
 
 function startPollingForReply(roomId) {
   clearPolling();
+  window._lastPollSnapshot = null;
   typingEl.style.display = 'flex';
   scrollToBottom();
 
@@ -1500,13 +1501,20 @@ function startPollingForReply(roomId) {
       const data = await gql(MESSAGES_QUERY, { roomId });
       const msgs = (data.messages || []).sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt) || Number(a.id) - Number(b.id));
 
-      // Look for any new assistant message after the one we last knew about
-      const lastUserIdx = msgs.reduce((acc, m, i) => m.role === 'user' ? i : acc, -1);
-      const hasNewReply = msgs.some((m, i) => 
-        i > lastUserIdx && m.role === 'assistant' && (m.content || '').length > 10
+      // Detect Clarity's response: either a new assistant message OR 
+      // an existing one whose content changed (AI updates in-place)
+      const currentSnapshot = msgs.map(m => m.id + ':' + (m.content || '').length).join('|');
+      if (!window._lastPollSnapshot) window._lastPollSnapshot = currentSnapshot;
+      
+      const changed = currentSnapshot !== window._lastPollSnapshot;
+      window._lastPollSnapshot = currentSnapshot;
+      
+      // Check if there's a substantial assistant reply (not just a placeholder)
+      const hasSubstantialReply = msgs.some(m => 
+        m.role === 'assistant' && (m.content || '').length > 50
       );
-
-      if (hasNewReply) {
+      
+      if (changed && hasSubstantialReply) {
         clearPolling();
         typingEl.style.display = 'none';
         renderMessages(msgs);

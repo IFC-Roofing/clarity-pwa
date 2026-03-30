@@ -1517,10 +1517,11 @@ async function openChat(item) {
     activeRoomId: roomId,
   };
 
-  // Reset agent tab bar to CLARITY tab for project chats
+  // Reset agent tab bar — show for projects, hide for global agents
   activeAgentTab = 'clarity';
+  const isGlobalAgent = item.dataset.projectId?.startsWith('agent-');
   if (agentTabBar) {
-    agentTabBar.style.display = '';
+    agentTabBar.style.display = isGlobalAgent ? 'none' : '';
     agentTabBar.querySelectorAll('.agent-tab').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.tab === 'clarity');
     });

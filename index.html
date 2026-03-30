@@ -51,7 +51,7 @@ body {
 #view-chat.active { transform: translateX(0); }
 
 /* ─── Status Bar (browser only) ─────────────────────────── */
-.status-bar { display: none !important; 
+.status-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -59,17 +59,7 @@ body {
   font-size: 14px; font-weight: 600;
   flex-shrink: 0;
 }
-@media all and (display-mode: standalone) { .status-bar { display: none !important;  display: none; } }
-
-/* ─── Tab System ─────────────────────────────────────────── */
-.tab-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  min-height: 0;
-}
-.tab-content.tab-hidden { display: none; }
+@media all and (display-mode: standalone) { .status-bar { display: none; } }
 
 /* ─── List View: Header ─────────────────────────────────── */
 .list-header { flex-shrink: 0; }
@@ -180,6 +170,26 @@ body {
 @keyframes spin { to { transform: rotate(360deg); } }
 .loading-text { font-size: 14px; color: #636366; }
 
+.skeleton-item {
+  display: flex; align-items: center;
+  padding: 12px 20px; gap: 12px;
+}
+.skeleton-avatar {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: #1c1c1e; flex-shrink: 0;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+.skeleton-lines { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.skeleton-line {
+  height: 12px; border-radius: 6px; background: #1c1c1e;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+.skeleton-line.short { width: 45%; }
+@keyframes shimmer {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 1; }
+}
+
 .error-state {
   display: flex; flex-direction: column; align-items: center;
   padding: 48px 24px; gap: 12px;
@@ -193,16 +203,6 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* ─── Refresh indicator ──────────────────────────────────── */
-.refresh-dot {
-  width: 8px; height: 8px; border-radius: 50%; background: #34C759;
-  flex-shrink: 0; animation: pulse-dot 2s ease-in-out infinite;
-}
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
-
 /* ─── Bottom Nav ─────────────────────────────────────────── */
 .bottom-nav {
   flex-shrink: 0;
@@ -211,132 +211,9 @@ body {
   display: flex; justify-content: space-around;
   padding: 8px 0 env(safe-area-inset-bottom, 20px);
 }
-.nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; color: #636366; font-size: 10px; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: color 0.15s; }
+.nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; color: #636366; font-size: 10px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .nav-item.active { color: #007AFF; }
 .nav-icon { font-size: 22px; }
-
-/* ══════════════════════════════════════════════════════════ */
-/*  PIPELINE TAB                                             */
-/* ══════════════════════════════════════════════════════════ */
-
-.pipeline-scrollable {
-  flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
-  padding: 12px 16px 24px;
-}
-.pipeline-scrollable::-webkit-scrollbar { display: none; }
-
-/* ─── Summary Card ───────────────────────────────────────── */
-.pipeline-summary-card {
-  background: #0d0d0d; border: 1px solid #1c1c1e; border-radius: 16px;
-  padding: 18px 8px 16px;
-  display: flex; gap: 0;
-  margin-bottom: 20px;
-}
-.pipeline-stat {
-  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
-}
-.pipeline-stat + .pipeline-stat { border-left: 1px solid #1c1c1e; }
-.pipeline-stat-value {
-  font-size: 28px; font-weight: 700; letter-spacing: -1px; line-height: 1;
-  color: #fff;
-}
-.pipeline-stat-value.blue  { color: #007AFF; }
-.pipeline-stat-value.green { color: #34C759; }
-.pipeline-stat-value.amber { color: #FF9500; }
-.pipeline-stat-value.red   { color: #FF3B30; }
-.pipeline-stat-label {
-  font-size: 10px; color: #636366; text-transform: uppercase;
-  letter-spacing: 0.5px; text-align: center; line-height: 1.3;
-}
-
-/* ─── Stage Cards ────────────────────────────────────────── */
-.pipeline-section-label {
-  font-size: 11px; font-weight: 600; color: #636366;
-  text-transform: uppercase; letter-spacing: 0.6px;
-  padding: 0 4px 10px;
-}
-
-.stage-card {
-  background: #0a0a0a; border: 1px solid #1c1c1e; border-radius: 14px;
-  margin-bottom: 8px; overflow: hidden;
-  transition: border-color 0.2s;
-}
-.stage-card.expanded { border-color: #2c2c2e; }
-
-.stage-header {
-  display: flex; align-items: center; padding: 13px 16px; gap: 12px;
-  cursor: pointer; -webkit-tap-highlight-color: transparent;
-  user-select: none;
-}
-.stage-header:active { background: rgba(255,255,255,0.03); }
-
-.stage-color-bar {
-  width: 4px; min-height: 36px; border-radius: 2px; flex-shrink: 0;
-  align-self: stretch;
-}
-.stage-color-bar.green { background: linear-gradient(180deg, #30D158, #25A244); }
-.stage-color-bar.amber { background: linear-gradient(180deg, #FF9F0A, #CC7A00); }
-.stage-color-bar.red   { background: linear-gradient(180deg, #FF453A, #CC2218); }
-
-.stage-info { flex: 1; min-width: 0; }
-.stage-name { font-size: 15px; font-weight: 600; color: #fff; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.stage-meta { font-size: 12px; color: #636366; }
-
-.stage-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.stage-badge {
-  background: #1c1c1e; font-size: 13px; font-weight: 700;
-  min-width: 28px; height: 28px; border-radius: 14px;
-  display: flex; align-items: center; justify-content: center; padding: 0 8px;
-  flex-shrink: 0;
-}
-.stage-badge.green { background: rgba(52,199,89,0.15); color: #34C759; }
-.stage-badge.amber { background: rgba(255,159,10,0.15); color: #FF9F0A; }
-.stage-badge.red   { background: rgba(255,69,58,0.15);  color: #FF453A; }
-
-.stage-chevron {
-  color: #48484a; font-size: 12px;
-  transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  flex-shrink: 0;
-}
-.stage-card.expanded .stage-chevron { transform: rotate(90deg); }
-
-/* ─── Expandable Project List ────────────────────────────── */
-.stage-projects {
-  max-height: 0; overflow: hidden;
-  transition: max-height 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-.stage-card.expanded .stage-projects { max-height: 3000px; }
-.stage-divider { height: 1px; background: #1a1a1a; margin: 0 16px; }
-
-.project-row {
-  display: flex; align-items: center; padding: 10px 16px; gap: 12px;
-  cursor: pointer; -webkit-tap-highlight-color: transparent;
-  transition: background 0.12s;
-}
-.project-row:active { background: rgba(255,255,255,0.04); }
-.project-row + .project-row { border-top: 1px solid rgba(255,255,255,0.04); }
-
-.project-avatar-sm {
-  width: 36px; height: 36px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0;
-}
-.project-info { flex: 1; min-width: 0; }
-.project-name { font-size: 14px; font-weight: 500; color: #e5e5ea; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.project-sub  { font-size: 11px; color: #636366; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.project-days-badge {
-  font-size: 12px; font-weight: 600; flex-shrink: 0;
-  padding: 3px 8px; border-radius: 10px;
-}
-.project-days-badge.green { background: rgba(52,199,89,0.12);  color: #30D158; }
-.project-days-badge.amber { background: rgba(255,159,10,0.12); color: #FF9F0A; }
-.project-days-badge.red   { background: rgba(255,69,58,0.12);  color: #FF453A; }
-
-/* ─── Pipeline loading ───────────────────────────────────── */
-#pipeline-loading {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  padding: 60px 24px; gap: 14px;
-}
 
 /* ══════════════════════════════════════════════════════════ */
 /*  CHAT VIEW                                                 */
@@ -426,10 +303,18 @@ body {
   padding: 9px 14px; font-size: 15px; line-height: 1.45;
   word-break: break-word; white-space: pre-wrap;
 }
+/* Sent */
 .bubble.sent { background: #00305C; color: #fff; border-radius: 18px; align-self: flex-end; }
 .bubble.sent.tail { border-radius: 18px 18px 5px 18px; }
+/* Received */
 .bubble.received { background: #1c1c1e; color: #fff; border-radius: 18px; align-self: flex-start; }
 .bubble.received.tail { border-radius: 18px 18px 18px 5px; }
+
+/* Sender name above first bubble in group */
+.msg-sender-name {
+  font-size: 11px; color: #636366; padding: 0 4px 2px;
+  align-self: flex-start; flex-shrink: 0; white-space: nowrap;
+}
 
 /* Delivery receipt */
 .delivery-row { display: flex; justify-content: flex-end; padding: 1px 4px 6px; flex-shrink: 0; }
@@ -500,202 +385,308 @@ body {
 }
 .send-btn:active { transform: scale(0.88); }
 .send-btn.inactive { background: #2c2c2e; opacity: 0.5; pointer-events: none; }
-.send-btn.sending  { background: #005EC4; opacity: 0.7; pointer-events: none; }
 
-/* ══════════════════════════════════════════════════════════
-   LOGIN SCREEN
-══════════════════════════════════════════════════════════ */
+/* Refresh indicator */
+.refresh-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: #34C759;
+  flex-shrink: 0; animation: pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ══════════════════════════════════════════════════════════ */
+/*  LOGIN VIEW                                                */
+/* ══════════════════════════════════════════════════════════ */
 #view-login {
-  position: absolute; inset: 0; z-index: 100;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
+  z-index: 10;
+  justify-content: center;
+  align-items: center;
   background: #000;
-  padding: 48px 32px env(safe-area-inset-bottom, 24px);
-  transition: opacity 0.3s, transform 0.3s;
+  padding: 32px 24px;
+  gap: 0;
 }
-#view-login.dismissed {
-  opacity: 0; transform: translateY(-24px); pointer-events: none;
-}
+#view-login.hidden { display: none; }
+
 .login-logo {
-  font-size: 56px; margin-bottom: 4px;
-  background: linear-gradient(135deg, #007AFF, #5AC8FA);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-size: 48px; font-weight: 800; letter-spacing: -2px;
+  color: #fff; margin-bottom: 4px; line-height: 1;
 }
-.login-title {
-  font-size: 32px; font-weight: 700; letter-spacing: -0.5px;
-  color: #fff; margin-bottom: 6px;
+.login-logo span { color: #007AFF; }
+.login-tagline {
+  font-size: 13px; color: #636366; margin-bottom: 36px;
 }
-.login-sub {
-  font-size: 15px; color: #8e8e93; margin-bottom: 48px; text-align: center; line-height: 1.5;
+.login-section-label {
+  font-size: 11px; font-weight: 600; color: #636366;
+  text-transform: uppercase; letter-spacing: 0.6px;
+  align-self: flex-start; margin-bottom: 8px;
 }
-.login-form { width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 12px; }
-.login-field {
-  background: #1c1c1e; border: 1.5px solid #2c2c2e; border-radius: 12px;
-  padding: 14px 18px; color: #fff; font-size: 16px;
-  font-family: inherit; outline: none; width: 100%;
-  transition: border-color 0.2s;
+.login-list {
+  width: 100%; background: #1c1c1e; border-radius: 14px;
+  overflow: hidden; margin-bottom: 32px;
 }
-.login-field:focus { border-color: #007AFF; }
-.login-field::placeholder { color: #48484a; }
-.login-btn {
-  background: #007AFF; color: #fff; border: none; border-radius: 12px;
-  padding: 15px; font-size: 16px; font-weight: 600;
-  font-family: inherit; cursor: pointer; width: 100%;
-  transition: background 0.15s, opacity 0.15s, transform 0.1s;
-  margin-top: 4px;
+.login-user-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 16px; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.1s;
 }
-.login-btn:active { transform: scale(0.97); }
-.login-btn:disabled { background: #2c2c2e; color: #636366; pointer-events: none; }
-.login-error {
-  font-size: 13px; color: #FF3B30; text-align: center;
-  min-height: 18px; margin-top: 4px;
+.login-user-row + .login-user-row { border-top: 1px solid rgba(255,255,255,0.05); }
+.login-user-row:active { background: #2c2c2e; }
+.login-user-avatar {
+  width: 38px; height: 38px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0;
 }
-.login-spinner {
-  width: 22px; height: 22px; border-radius: 50%;
-  border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff;
-  animation: spin 0.7s linear infinite; margin: 0 auto;
+.login-user-info { flex: 1; min-width: 0; }
+.login-user-name { font-size: 15px; font-weight: 600; }
+.login-user-email { font-size: 12px; color: #636366; }
+.login-chevron { color: #3c3c3e; font-size: 16px; }
+
+.login-loading {
+  display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 48px 0;
 }
+
+/* ══════════════════════════════════════════════════════════ */
+/*  PIPELINE VIEW                                             */
+/* ══════════════════════════════════════════════════════════ */
+#view-pipeline {
+  transform: translateX(0); z-index: 0;
+  display: none;
+}
+#view-pipeline.pipeline-active {
+  display: flex;
+}
+
+.pipeline-header {
+  flex-shrink: 0;
+  padding: 4px 20px 12px;
+}
+.pipeline-title { font-size: 32px; font-weight: 700; letter-spacing: -0.5px; }
+
+.pipeline-scrollable {
+  flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  padding: 0 0 16px;
+}
+.pipeline-scrollable::-webkit-scrollbar { display: none; }
+
+/* KPI row */
+.kpi-row {
+  display: flex; gap: 10px; padding: 0 16px 20px;
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+}
+.kpi-row::-webkit-scrollbar { display: none; }
+.kpi-card {
+  flex-shrink: 0; background: #1c1c1e; border-radius: 14px;
+  padding: 14px 16px; min-width: 110px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.kpi-value { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; line-height: 1; }
+.kpi-label { font-size: 11px; color: #8e8e93; font-weight: 500; }
+.kpi-sub   { font-size: 10px; color: #636366; }
+.kpi-card.green .kpi-value { color: #34C759; }
+.kpi-card.amber .kpi-value { color: #FF9500; }
+.kpi-card.blue  .kpi-value { color: #007AFF; }
+
+/* Section header */
+.pipeline-section-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 4px 20px 8px;
+}
+.pipeline-section-title { font-size: 13px; font-weight: 600; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.5px; }
+.pipeline-total { font-size: 13px; color: #636366; }
+
+/* Stage bucket row */
+.stage-bucket {
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.stage-bucket:active .bucket-row { background: #111; }
+
+.bucket-row {
+  display: flex; align-items: center; padding: 14px 20px; gap: 12px;
+  transition: background 0.1s;
+}
+.bucket-bar-wrap {
+  flex: 1; height: 4px; background: #1c1c1e; border-radius: 2px; overflow: hidden;
+}
+.bucket-bar {
+  height: 100%; border-radius: 2px;
+  transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.bucket-bar.green { background: #34C759; }
+.bucket-bar.amber { background: #FF9500; }
+.bucket-bar.red   { background: #FF3B30; }
+.bucket-bar.gray  { background: #636366; }
+
+.bucket-left { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+.bucket-name { font-size: 16px; font-weight: 600; }
+.bucket-meta { display: flex; align-items: center; gap: 8px; }
+
+.bucket-count {
+  font-size: 22px; font-weight: 700; flex-shrink: 0; min-width: 36px; text-align: right;
+}
+.bucket-count.green { color: #34C759; }
+.bucket-count.amber { color: #FF9500; }
+.bucket-count.blue  { color: #007AFF; }
+.bucket-count.red   { color: #FF3B30; }
+.bucket-count.gray  { color: #636366; }
+
+.bucket-chevron {
+  font-size: 13px; color: #3c3c3e; flex-shrink: 0;
+  transition: transform 0.25s; display: inline-block;
+}
+.stage-bucket.open .bucket-chevron { transform: rotate(90deg); }
+
+/* Expanded project list inside bucket */
+.bucket-projects {
+  display: none;
+  background: #0a0a0a;
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+.stage-bucket.open .bucket-projects { display: block; }
+
+.bucket-project-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 20px 10px 48px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition: background 0.1s;
+}
+.bucket-project-item:last-child { border-bottom: none; }
+.bucket-project-item:active { background: #141414; }
+
+.bp-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.bp-info { flex: 1; min-width: 0; }
+.bp-name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bp-meta { font-size: 12px; color: #636366; }
+.bp-days { font-size: 12px; color: #636366; flex-shrink: 0; }
+
+.bucket-show-more {
+  padding: 10px 20px 10px 48px;
+  font-size: 13px; color: #007AFF; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.bucket-show-more:active { opacity: 0.6; }
 </style>
 </head>
 <body>
 <div id="app">
 
 <!-- ════════════════════════════════════════════════════════ -->
-<!--  VIEW: Login                                            -->
+<!--  VIEW: Login                                           -->
 <!-- ════════════════════════════════════════════════════════ -->
-<div id="view-login">
-  <div class="login-logo">✦</div>
-  <div class="login-title">Clarity</div>
-  <div class="login-sub">Your AI roofing intelligence.<br>Sign in to continue.</div>
-  <div class="login-form">
-    <input class="login-field" id="login-user-id" type="text" placeholder="User ID" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" />
-    <input class="login-field" id="login-password" type="password" placeholder="Password" autocomplete="current-password" />
-    <div class="login-error" id="login-error"></div>
-    <button class="login-btn" id="login-btn">Sign In</button>
+<div id="view-login" class="view">
+  <div class="login-logo">✦ Clarity</div>
+  <div class="login-tagline">Your AI roofing intelligence layer</div>
+  <div class="login-section-label">Who are you?</div>
+  <div class="login-list" id="login-list">
+    <div class="login-loading">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Loading reps…</div>
+    </div>
   </div>
 </div>
 
+
 <!-- ════════════════════════════════════════════════════════ -->
-<!--  VIEW: List + Pipeline (tab-switched)                   -->
+<!--  VIEW: Conversation List                               -->
 <!-- ════════════════════════════════════════════════════════ -->
 <div id="view-list" class="view">
 
-  <!-- ── Shared status bar ──────────────────────────────── -->
-  <div class="list-header" id="list-header">
-
-    <!-- Messages header (shown on messages tab) -->
-    <div id="hdr-messages">
-      <div class="header">
+  <div class="list-header">
+    <div class="status-bar">
+      <span id="status-time">9:41</span>
+      <span style="font-size:11px;color:#8e8e93">clarity.ifcroofing.com</span>
+      <span>📶 🔋</span>
+    </div>
+    <div class="header">
+      <div>
         <div class="header-title">Clarity</div>
-        <div class="header-actions">
-          <div class="refresh-dot" id="refresh-dot" title="Live data"></div>
-          <button class="header-btn" id="refresh-btn" title="Refresh">↻</button>
-          <button class="header-btn">✏️</button>
-        </div>
+        <div id="list-header-sub" style="font-size:13px;color:#636366;margin-top:-2px;padding-left:2px;"></div>
       </div>
-      <div class="search-bar">
-        <input class="search-input" id="search-input" placeholder="🔍  Search conversations…" />
+      <div class="header-actions">
+        <div class="refresh-dot" id="refresh-dot" title="Live data"></div>
+        <button class="header-btn" id="refresh-btn" title="Refresh">↻</button>
+        <button class="header-btn" id="logout-btn" title="Switch rep" style="font-size:13px;">⇄</button>
       </div>
     </div>
-
-    <!-- Pipeline header (shown on pipeline tab) -->
-    <div id="hdr-pipeline" style="display:none">
-      <div class="header">
-        <div class="header-title">Pipeline</div>
-        <div class="header-actions">
-          <div class="refresh-dot" id="pipeline-refresh-dot" title="Live data"></div>
-          <button class="header-btn" id="pipeline-refresh-btn" title="Refresh">↻</button>
-        </div>
-      </div>
+    <div class="search-bar">
+      <input class="search-input" id="search-input" placeholder="🔍  Search conversations…" />
     </div>
   </div>
 
-  <!-- ── TAB: Messages ──────────────────────────────────── -->
-  <div id="tab-messages" class="tab-content">
-    <div class="list-scrollable">
-      <!-- Global Agents gallery -->
-      <div class="gallery-section">
-        <div class="gallery-scroll">
-          <div class="gallery-item">
-            <div class="gallery-avatar clarity">✦<span class="gallery-badge">3</span></div>
-            <div class="gallery-label">Clarity</div>
-          </div>
-          <div class="gallery-item">
-            <div class="gallery-avatar mark">M</div>
-            <div class="gallery-label">Mark</div>
-          </div>
-          <div class="gallery-item">
-            <div class="gallery-avatar guide">G</div>
-            <div class="gallery-label">Guide</div>
-          </div>
-          <div class="gallery-item">
-            <div class="gallery-avatar feedback">📋</div>
-            <div class="gallery-label">IFC Feedback</div>
-          </div>
-          <div class="gallery-item">
-            <div class="gallery-avatar sub">🎯</div>
-            <div class="gallery-label">Marketing</div>
-          </div>
-          <div class="gallery-item">
-            <div class="gallery-avatar sub">PH</div>
-            <div class="gallery-label">Perry Hix</div>
-          </div>
-          <div class="gallery-item">
-            <div class="gallery-avatar sub">📧</div>
-            <div class="gallery-label">Gmail</div>
-          </div>
-          <div class="gallery-item">
-            <div class="gallery-avatar sub">🏗️</div>
-            <div class="gallery-label">PLAT</div>
-          </div>
-          <div class="gallery-item">
-            <div class="gallery-avatar sub">📇</div>
-            <div class="gallery-label">Contact Clean</div>
-          </div>
-          <div class="gallery-item">
-            <div class="gallery-avatar sub">+</div>
-            <div class="gallery-label">New</div>
-          </div>
+  <div class="list-scrollable">
+    <!-- Global Agents gallery -->
+    <div class="gallery-section">
+      <div class="gallery-scroll">
+        <div class="gallery-item">
+          <div class="gallery-avatar clarity">✦<span class="gallery-badge">3</span></div>
+          <div class="gallery-label">Clarity</div>
+        </div>
+        <div class="gallery-item">
+          <div class="gallery-avatar mark">M</div>
+          <div class="gallery-label">Mark</div>
+        </div>
+        <div class="gallery-item">
+          <div class="gallery-avatar guide">G</div>
+          <div class="gallery-label">Guide</div>
+        </div>
+        <div class="gallery-item">
+          <div class="gallery-avatar feedback">📋</div>
+          <div class="gallery-label">IFC Feedback</div>
+        </div>
+        <div class="gallery-item">
+          <div class="gallery-avatar sub">🎯</div>
+          <div class="gallery-label">Marketing</div>
+        </div>
+        <div class="gallery-item">
+          <div class="gallery-avatar sub">PH</div>
+          <div class="gallery-label">Perry Hix</div>
+        </div>
+        <div class="gallery-item">
+          <div class="gallery-avatar sub">📧</div>
+          <div class="gallery-label">Gmail</div>
+        </div>
+        <div class="gallery-item">
+          <div class="gallery-avatar sub">🏗️</div>
+          <div class="gallery-label">PLAT</div>
+        </div>
+        <div class="gallery-item">
+          <div class="gallery-avatar sub">📇</div>
+          <div class="gallery-label">Contact Clean</div>
+        </div>
+        <div class="gallery-item">
+          <div class="gallery-avatar sub">+</div>
+          <div class="gallery-label">New</div>
         </div>
       </div>
-
-      <div class="divider"></div>
-      <div class="section-label">Project Clarities</div>
-
-      <div class="chat-list" id="chat-list">
-        <div class="loading-state" id="list-loading">
-          <div class="loading-spinner"></div>
-          <div class="loading-text">Loading projects…</div>
-        </div>
-      </div>
-
-      <div class="list-spacer"></div>
     </div>
-  </div>
 
-  <!-- ── TAB: Pipeline ──────────────────────────────────── -->
-  <div id="tab-pipeline" class="tab-content tab-hidden">
-    <div class="pipeline-scrollable" id="pipeline-scrollable">
-      <!-- Populated by JS -->
-      <div id="pipeline-loading">
+    <div class="divider"></div>
+    <div class="section-label">Project Clarities</div>
+
+    <div class="chat-list" id="chat-list">
+      <!-- Populated by JS from API -->
+      <div class="loading-state" id="list-loading">
         <div class="loading-spinner"></div>
-        <div class="loading-text">Loading pipeline…</div>
+        <div class="loading-text">Loading projects…</div>
       </div>
     </div>
-  </div>
 
-  <!-- ── Bottom Nav (shared) ────────────────────────────── -->
+    <div class="list-spacer"></div>
+  </div><!-- .list-scrollable -->
+
+  <!-- Bottom nav -->
   <div class="bottom-nav">
-    <div class="nav-item active" id="nav-messages">
-      <span class="nav-icon">💬</span><span>Messages</span>
-    </div>
-    <div class="nav-item" id="nav-pipeline">
-      <span class="nav-icon">📊</span><span>Pipeline</span>
-    </div>
-    <div class="nav-item" id="nav-ifc">
-      <span class="nav-icon">🔗</span><span>IFC App</span>
-    </div>
+    <div class="nav-item active" id="list-nav-messages"><span class="nav-icon">💬</span><span>Messages</span></div>
+    <div class="nav-item" id="list-nav-pipeline"><span class="nav-icon">📊</span><span>Pipeline</span></div>
+    <div class="nav-item" id="list-nav-app"><span class="nav-icon">🔗</span><span>IFC App</span></div>
   </div>
 
 </div><!-- #view-list -->
@@ -732,7 +723,10 @@ body {
 
   <!-- Messages -->
   <div class="messages-area" id="messages-area">
-    <div id="messages-content"></div>
+    <div id="messages-content">
+      <!-- Populated by JS -->
+    </div>
+    <!-- Typing indicator (lives inside scroll area) -->
     <div id="typing-indicator">
       <div class="msg-avatar" id="typing-avatar">✦</div>
       <div class="typing-bubble">
@@ -748,7 +742,12 @@ body {
     <div class="input-row">
       <button class="input-plus-btn">+</button>
       <div class="input-field-wrap">
-        <textarea class="input-field" id="msg-input" rows="1" placeholder="Message Clarity…"></textarea>
+        <textarea
+          class="input-field"
+          id="msg-input"
+          rows="1"
+          placeholder="Message Clarity…"
+        ></textarea>
       </div>
       <button class="send-btn inactive" id="send-btn">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -760,26 +759,76 @@ body {
 
 </div><!-- #view-chat -->
 
+
+<!-- ════════════════════════════════════════════════════════ -->
+<!--  VIEW: Pipeline                                        -->
+<!-- ════════════════════════════════════════════════════════ -->
+<div id="view-pipeline" class="view">
+
+  <div class="list-header">
+    <div class="status-bar">
+      <span id="pipeline-status-time">9:41</span>
+      <span style="font-size:11px;color:#8e8e93">clarity.ifcroofing.com</span>
+      <span>📶 🔋</span>
+    </div>
+    <div class="pipeline-header">
+      <div class="pipeline-title">Pipeline</div>
+    </div>
+  </div>
+
+  <div class="pipeline-scrollable" id="pipeline-scrollable">
+    <div class="loading-state" id="pipeline-loading">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Loading pipeline…</div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-item" id="pipeline-nav-messages"><span class="nav-icon">💬</span><span>Messages</span></div>
+    <div class="nav-item active" id="pipeline-nav-pipeline"><span class="nav-icon">📊</span><span>Pipeline</span></div>
+    <div class="nav-item" id="pipeline-nav-app"><span class="nav-icon">🔗</span><span>IFC App</span></div>
+  </div>
+
+</div><!-- #view-pipeline -->
+
+
 </div><!-- #app -->
 
 <script>
 /* ═══════════════════════════════════════════════════════════
    Clarity PWA — Phase 4: Full 2-way Clarity Connection (IFC-667)
-   Phase 3: Pipeline Tab (IFC-656)
-   Phase 2: Live IFC API Integration (IFC-655)
-   Phase 1: Chat View (IFC-653)
+   • Login: pick-a-rep screen, stored in localStorage
+   • Send: createMessage mutation with X-User-Id header
+   • Poll: wait for Clarity AI reply (detect final HTML response)
+   • Scope: projects(mine: true) per logged-in rep
 ═══════════════════════════════════════════════════════════ */
 
 const GQL = '/api/graphql';
 
 /* ── Auth state ──────────────────────────────────────────── */
-let currentUserId   = null;   // X-User-Id header value
-let currentUserName = null;   // display name
+const AUTH_KEY = 'clarity_user';
+let currentUser = null;  // { id, name, email }
+
+function loadStoredUser() {
+  try {
+    const stored = localStorage.getItem(AUTH_KEY);
+    if (stored) currentUser = JSON.parse(stored);
+  } catch (e) { currentUser = null; }
+}
+function saveUser(user) {
+  currentUser = user;
+  localStorage.setItem(AUTH_KEY, JSON.stringify(user));
+}
+function clearUser() {
+  currentUser = null;
+  localStorage.removeItem(AUTH_KEY);
+}
 
 /* ── GraphQL fetch helper ────────────────────────────────── */
-async function gql(query, variables = {}, userId = currentUserId) {
+async function gql(query, variables = {}, userId = null) {
   const headers = { 'Content-Type': 'application/json' };
-  if (userId) headers['X-User-Id'] = userId;
+  const uid = userId || currentUser?.id;
+  if (uid) headers['X-User-Id'] = String(uid);
   const res = await fetch(GQL, {
     method: 'POST',
     headers,
@@ -791,43 +840,46 @@ async function gql(query, variables = {}, userId = currentUserId) {
   return json.data;
 }
 
-/* ── HTML → plain text ───────────────────────────────────── */
+/* ── HTML → plain text (strip tags + decode entities) ───── */
 function stripHtml(html) {
   if (!html) return '';
+  // Remove inline-actions, cite markers, resource-link wrappers
   let text = html
     .replace(/<div class="inline-actions-container">[\s\S]*?<\/div>/gi, '')
     .replace(/<sup class="cite-marker"[^>]*>.*?<\/sup>/gi, '')
     .replace(/<[^>]+>/g, ' ')
     .replace(/\s{2,}/g, ' ')
     .trim();
+  // Decode HTML entities
   const ta = document.createElement('textarea');
   ta.innerHTML = text;
   return ta.value.trim();
-}
-
-/* ── Escape HTML ─────────────────────────────────────────── */
-function escHtml(s) {
-  return String(s)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 /* ── Relative timestamp ──────────────────────────────────── */
 function relativeTime(isoStr) {
   if (!isoStr) return '';
   const d = new Date(isoStr);
-  const diffDays = Math.floor((Date.now() - d) / 86400000);
-  if (diffDays === 0) return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-  if (diffDays === 1) return 'Yesterday';
-  if (diffDays < 7)  return d.toLocaleDateString('en-US', { weekday: 'short' });
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const now = new Date();
+  const diffMs = now - d;
+  const diffDays = Math.floor(diffMs / 86400000);
+  if (diffDays === 0) {
+    return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  } else if (diffDays === 1) {
+    return 'Yesterday';
+  } else if (diffDays < 7) {
+    return d.toLocaleDateString('en-US', { weekday: 'short' });
+  } else {
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
 }
 
-/* ── Format message timestamp dividers ───────────────────── */
+/* ── Format message timestamp for dividers ───────────────── */
 function formatMsgTs(isoStr) {
   if (!isoStr) return '';
   const d = new Date(isoStr);
-  const diffDays = Math.floor((Date.now() - d) / 86400000);
+  const now = new Date();
+  const diffDays = Math.floor((now - d) / 86400000);
   const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
   if (diffDays === 0) return `Today ${time}`;
   if (diffDays === 1) return `Yesterday ${time}`;
@@ -835,28 +887,14 @@ function formatMsgTs(isoStr) {
 }
 
 /* ── Stage → status color ────────────────────────────────── */
-const STATUS_GREEN = new Set(['INSPECTED','ENOUGH DAMAGE','APPROVED','SUPP COMPLETED','BILLED',
-  'COLLECTED','INSTALL COMPLETE','BILLED-BACKEND','INSTALL SCHEDULED']);
+const STATUS_GREEN = new Set(['INSPECTED','ENOUGH DAMAGE','APPROVED','SUPP COMPLETED','BILLED','COLLECTED','INSTALL COMPLETE','BILLED-BACKEND']);
 const STATUS_RED   = new Set(['LOST','DEAD','PA-LAW','CANCELLED','NO DAMAGE','DISPUTED']);
 function stageColor(stage) {
-  if (!stage) return 'amber';
+  if (!stage) return '';
   const s = stage.toUpperCase();
   if (STATUS_GREEN.has(s)) return 'green';
   if (STATUS_RED.has(s))   return 'red';
   return 'amber';
-}
-
-/* ── Canonical pipeline stage order ─────────────────────── */
-const STAGE_ORDER = [
-  'LEAD','INSPECTED','ENOUGH DAMAGE','ADJ SCHEDULED','APPROVED',
-  'SUPP SENT','SUPP COMPLETED','INSTALL SCHEDULED','INSTALL COMPLETE',
-  'BILLED','BILLED-BACKEND','COLLECTED',
-  // Terminal / attention
-  'LOST','DEAD','NO DAMAGE','CANCELLED','PA-LAW','DISPUTED',
-];
-function stageRank(s) {
-  const idx = STAGE_ORDER.indexOf((s||'').toUpperCase());
-  return idx === -1 ? 99 : idx;
 }
 
 /* ── Avatar gradient palette ─────────────────────────────── */
@@ -878,185 +916,38 @@ function avatarColor(name) {
 function initials(name) {
   if (!name) return '?';
   const parts = name.trim().split(/\s+/);
-  return parts.length === 1
-    ? parts[0][0].toUpperCase()
-    : (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  if (parts.length === 1) return parts[0][0].toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
 /* ── State ───────────────────────────────────────────────── */
-let activeProject      = null;
-let allProjects        = [];
-let searchQuery        = '';
-let activeTab          = 'messages'; // 'messages' | 'pipeline'
-let pipelineLoaded     = false;
-let pollInterval       = null;   // AI response polling handle
-let lastKnownMsgId     = null;   // track latest message id to detect new AI response
-let sendPending        = false;  // guard against double-sends
+let activeProject = null;   // { id, name, roomId, recordStatus, daysInStatus, repName }
+let allProjects   = [];     // raw API data
+let searchQuery   = '';
 
 /* ── DOM refs ────────────────────────────────────────────── */
-const viewLogin      = document.getElementById('view-login');
-const loginUserIdEl  = document.getElementById('login-user-id');
-const loginPasswordEl= document.getElementById('login-password');
-const loginBtn       = document.getElementById('login-btn');
-const loginError     = document.getElementById('login-error');
-const viewList       = document.getElementById('view-list');
-const viewChat       = document.getElementById('view-chat');
-const backBtn        = document.getElementById('back-btn');
-const chatList       = document.getElementById('chat-list');
-const msgContent     = document.getElementById('messages-content');
-const messagesArea   = document.getElementById('messages-area');
-const msgInput       = document.getElementById('msg-input');
-const sendBtn        = document.getElementById('send-btn');
-const typingEl       = document.getElementById('typing-indicator');
-const headerAvatar   = document.getElementById('chat-header-avatar');
-const headerName     = document.getElementById('chat-header-name');
-const headerStage    = document.getElementById('chat-header-stage');
-const searchInput    = document.getElementById('search-input');
-const refreshBtn     = document.getElementById('refresh-btn');
-const refreshDot     = document.getElementById('refresh-dot');
-const pipelineRefreshBtn = document.getElementById('pipeline-refresh-btn');
-const pipelineRefreshDot = document.getElementById('pipeline-refresh-dot');
-const tabMessages    = document.getElementById('tab-messages');
-const tabPipeline    = document.getElementById('tab-pipeline');
-const hdrMessages    = document.getElementById('hdr-messages');
-const hdrPipeline    = document.getElementById('hdr-pipeline');
-const navMessages    = document.getElementById('nav-messages');
-const navPipeline    = document.getElementById('nav-pipeline');
-const navIfc         = document.getElementById('nav-ifc');
+const viewList    = document.getElementById('view-list');
+const viewChat    = document.getElementById('view-chat');
+const backBtn     = document.getElementById('back-btn');
+const chatList    = document.getElementById('chat-list');
+const msgContent  = document.getElementById('messages-content');
+const messagesArea= document.getElementById('messages-area');
+const msgInput    = document.getElementById('msg-input');
+const sendBtn     = document.getElementById('send-btn');
+const typingEl    = document.getElementById('typing-indicator');
+const headerAvatar= document.getElementById('chat-header-avatar');
+const headerName  = document.getElementById('chat-header-name');
+const headerStage = document.getElementById('chat-header-stage');
+const searchInput = document.getElementById('search-input');
+const refreshBtn  = document.getElementById('refresh-btn');
+const refreshDot  = document.getElementById('refresh-dot');
 
 /* ══════════════════════════════════════════════════════════
-   TAB NAVIGATION
-══════════════════════════════════════════════════════════ */
-function switchTab(tab) {
-  if (activeTab === tab) return;
-  activeTab = tab;
-
-  if (tab === 'messages') {
-    tabMessages.classList.remove('tab-hidden');
-    tabPipeline.classList.add('tab-hidden');
-    hdrMessages.style.display = '';
-    hdrPipeline.style.display = 'none';
-    navMessages.classList.add('active');
-    navPipeline.classList.remove('active');
-  } else if (tab === 'pipeline') {
-    tabMessages.classList.add('tab-hidden');
-    tabPipeline.classList.remove('tab-hidden');
-    hdrMessages.style.display = 'none';
-    hdrPipeline.style.display = '';
-    navPipeline.classList.add('active');
-    navMessages.classList.remove('active');
-    // Load pipeline data if not yet loaded (or share allProjects)
-    if (!pipelineLoaded) {
-      renderPipeline(allProjects.length ? allProjects : null);
-    }
-  }
-  navIfc.classList.remove('active');
-}
-
-navMessages.addEventListener('click', () => switchTab('messages'));
-navPipeline.addEventListener('click', () => switchTab('pipeline'));
-navIfc.addEventListener('click', () => {
-  window.open('https://app.ifcroofing.com', '_blank');
-});
-
-/* ══════════════════════════════════════════════════════════
-   LOGIN — Auth / Session Management
-══════════════════════════════════════════════════════════ */
-const ME_QUERY = `
-  query Me {
-    me {
-      id
-      name
-      email
-    }
-  }
-`;
-
-async function tryRestoreSession() {
-  const saved = sessionStorage.getItem('clarity_user');
-  if (!saved) return false;
-  try {
-    const { id, name } = JSON.parse(saved);
-    if (!id) return false;
-    /* Validate the saved session against the API */
-    const data = await gql(ME_QUERY, {}, id);
-    const me = data?.me;
-    if (!me?.id) return false;
-    currentUserId   = me.id;
-    currentUserName = me.name || name;
-    return true;
-  } catch {
-    sessionStorage.removeItem('clarity_user');
-    return false;
-  }
-}
-
-function showLogin() {
-  viewLogin.classList.remove('dismissed');
-}
-
-function dismissLogin() {
-  viewLogin.classList.add('dismissed');
-}
-
-async function doLogin() {
-  const userId   = loginUserIdEl.value.trim();
-  const password = loginPasswordEl.value.trim(); // forwarded via nginx / handled server-side
-  loginError.textContent = '';
-
-  if (!userId) {
-    loginError.textContent = 'Please enter your User ID.';
-    return;
-  }
-
-  loginBtn.disabled   = true;
-  loginBtn.innerHTML  = '<div class="login-spinner"></div>';
-
-  try {
-    /* Validate credentials: POST to graphql with X-User-Id, fetch me */
-    const headers = { 'Content-Type': 'application/json', 'X-User-Id': userId };
-    if (password) headers['X-User-Password'] = password;
-
-    const res = await fetch(GQL, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ query: ME_QUERY }),
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const json = await res.json();
-    if (json.errors?.length) throw new Error(json.errors[0].message);
-    const me = json.data?.me;
-    if (!me?.id) throw new Error('Invalid credentials — user not found.');
-
-    currentUserId   = me.id;
-    currentUserName = me.name || userId;
-
-    sessionStorage.setItem('clarity_user', JSON.stringify({ id: currentUserId, name: currentUserName }));
-
-    /* Update header title with user name */
-    const hTitle = document.querySelector('#hdr-messages .header-title');
-    if (hTitle) hTitle.textContent = 'Clarity';
-
-    dismissLogin();
-    loadProjects();
-
-  } catch (err) {
-    loginError.textContent = err.message || 'Sign-in failed. Try again.';
-    loginBtn.disabled = false;
-    loginBtn.textContent = 'Sign In';
-  }
-}
-
-loginBtn.addEventListener('click', doLogin);
-loginUserIdEl.addEventListener('keydown', e => { if (e.key === 'Enter') loginPasswordEl.focus(); });
-loginPasswordEl.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
-
-/* ══════════════════════════════════════════════════════════
-   LIST VIEW — Load & Render (Messages Tab)
+   LIST VIEW — Load & Render
 ══════════════════════════════════════════════════════════ */
 const LIST_QUERY = `
-  query ProjectList {
-    projects(mine: true) {
+  query ProjectList($mine: Boolean) {
+    projects(mine: $mine) {
       projects {
         id
         name
@@ -1068,7 +959,6 @@ const LIST_QUERY = `
         projectGeneralChatRoom {
           id
           lastMessage {
-            id
             content
             createdAt
             role
@@ -1083,13 +973,14 @@ const LIST_QUERY = `
 
 async function loadProjects() {
   setListLoading();
+  // Update header subtitle to show who's logged in
+  updateListHeader();
   try {
-    const data = await gql(LIST_QUERY);
+    const mine = currentUser != null;
+    const data = await gql(LIST_QUERY, { mine });
     allProjects = data.projects.projects || [];
     renderList(allProjects);
-    refreshDot.style.background = '#34C759';
-    // If pipeline tab was open, refresh it too
-    if (pipelineLoaded) renderPipeline(allProjects);
+    refreshDot.style.background = '#34C759'; // green = fresh
   } catch (err) {
     console.error('loadProjects:', err);
     setListError(err.message);
@@ -1097,9 +988,16 @@ async function loadProjects() {
   }
 }
 
+function updateListHeader() {
+  const sub = document.getElementById('list-header-sub');
+  if (sub) {
+    sub.textContent = currentUser ? currentUser.name : '';
+  }
+}
+
 function setListLoading() {
   chatList.innerHTML = `
-    <div class="loading-state">
+    <div class="loading-state" id="list-loading">
       <div class="loading-spinner"></div>
       <div class="loading-text">Loading projects…</div>
     </div>`;
@@ -1109,7 +1007,7 @@ function setListError(msg) {
   chatList.innerHTML = `
     <div class="error-state">
       <div class="error-icon">⚠️</div>
-      <div class="error-text">Couldn't load projects.<br><small style="color:#444">${escHtml(msg)}</small></div>
+      <div class="error-text">Couldn't load projects.<br><small style="color:#444">${msg}</small></div>
       <button class="retry-btn" id="retry-btn">Try Again</button>
     </div>`;
   document.getElementById('retry-btn')?.addEventListener('click', loadProjects);
@@ -1125,19 +1023,20 @@ function renderList(projects) {
   const frag = document.createDocumentFragment();
 
   projects.forEach(p => {
-    const nm      = p.name?.trim() || 'Unknown';
-    const stage   = p.recordStatus || '—';
-    const sc      = stageColor(stage);
-    const roomId  = p.projectGeneralChatRoom?.id || null;
-    const lastMsg = p.projectGeneralChatRoom?.lastMessage;
-    const init    = initials(nm);
-    const bg      = avatarColor(nm);
-    const ts      = relativeTime(p.updatedAt);
-    const repName = p.user?.name || '';
+    const nm       = p.name?.trim() || 'Unknown';
+    const stage    = p.recordStatus || '—';
+    const sc       = stageColor(stage);
+    const roomId   = p.projectGeneralChatRoom?.id || null;
+    const lastMsg  = p.projectGeneralChatRoom?.lastMessage;
+    const init     = initials(nm);
+    const bg       = avatarColor(nm);
+    const ts       = relativeTime(p.updatedAt);
+    const repName  = p.user?.name || '';
 
+    // Preview text
     let preview = '';
     if (lastMsg) {
-      const plain  = stripHtml(lastMsg.content);
+      const plain = stripHtml(lastMsg.content);
       const sender = lastMsg.role === 'assistant' ? 'Clarity' : (lastMsg.user?.name || repName || 'You');
       preview = `${sender}: ${plain}`;
     } else {
@@ -1146,13 +1045,13 @@ function renderList(projects) {
 
     const item = document.createElement('div');
     item.className = 'chat-item';
-    item.dataset.projectId   = p.id;
-    item.dataset.name        = nm;
-    item.dataset.stage       = stage;
-    item.dataset.statusColor = sc;
-    item.dataset.roomId      = roomId || '';
+    item.dataset.projectId  = p.id;
+    item.dataset.name       = nm;
+    item.dataset.stage      = stage;
+    item.dataset.statusColor= sc;
+    item.dataset.roomId     = roomId || '';
     item.dataset.daysInStatus = p.daysInStatus || '0';
-    item.dataset.repName     = repName;
+    item.dataset.repName    = repName;
 
     item.innerHTML = `
       <div class="chat-avatar" style="background:${bg}">
@@ -1174,7 +1073,13 @@ function renderList(projects) {
   chatList.appendChild(frag);
 }
 
-/* ── Search ──────────────────────────────────────────────── */
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ── Search filter ───────────────────────────────────────── */
 searchInput.addEventListener('input', () => {
   searchQuery = searchInput.value.trim().toLowerCase();
   if (!allProjects.length) return;
@@ -1192,209 +1097,8 @@ searchInput.addEventListener('input', () => {
 refreshBtn.addEventListener('click', () => {
   searchInput.value = '';
   searchQuery = '';
-  refreshDot.style.background = '#FF9500';
+  refreshDot.style.background = '#FF9500'; // amber = loading
   loadProjects();
-});
-
-/* ══════════════════════════════════════════════════════════
-   PIPELINE TAB — Render & Refresh
-══════════════════════════════════════════════════════════ */
-
-/* Pipeline-specific query (lighter, no chat room data needed) */
-const PIPELINE_QUERY = `
-  query PipelineProjects {
-    projects(page: 1, perPage: 100, mine: false) {
-      totalPages
-      projects {
-        id
-        name
-        recordStatus
-        daysInStatus
-        user { name }
-        updatedAt
-      }
-    }
-  }
-`;
-
-async function loadPipeline() {
-  setPipelineLoading();
-  pipelineRefreshDot.style.background = '#FF9500';
-  try {
-    const data = await gql(PIPELINE_QUERY);
-    const projects = data.projects?.projects || [];
-    // Merge into allProjects if messages hasn't loaded yet
-    if (!allProjects.length) allProjects = projects;
-    renderPipeline(projects);
-    pipelineRefreshDot.style.background = '#34C759';
-  } catch (err) {
-    console.error('loadPipeline:', err);
-    setPipelineError(err.message);
-    pipelineRefreshDot.style.background = '#FF3B30';
-  }
-}
-
-function setPipelineLoading() {
-  const scrollable = document.getElementById('pipeline-scrollable');
-  scrollable.innerHTML = `
-    <div id="pipeline-loading">
-      <div class="loading-spinner"></div>
-      <div class="loading-text">Loading pipeline…</div>
-    </div>`;
-}
-
-function setPipelineError(msg) {
-  const scrollable = document.getElementById('pipeline-scrollable');
-  scrollable.innerHTML = `
-    <div class="error-state">
-      <div class="error-icon">⚠️</div>
-      <div class="error-text">Couldn't load pipeline.<br><small style="color:#444">${escHtml(msg)}</small></div>
-      <button class="retry-btn" id="pipeline-retry-btn">Try Again</button>
-    </div>`;
-  document.getElementById('pipeline-retry-btn')?.addEventListener('click', loadPipeline);
-}
-
-function renderPipeline(projects) {
-  pipelineLoaded = true;
-
-  // If no data yet, trigger a fetch
-  if (!projects || !projects.length) {
-    loadPipeline();
-    return;
-  }
-
-  const scrollable = document.getElementById('pipeline-scrollable');
-
-  /* ── Group by recordStatus ────────────────────────────── */
-  const grouped = {};
-  projects.forEach(p => {
-    const s = (p.recordStatus || 'UNKNOWN').toUpperCase();
-    if (!grouped[s]) grouped[s] = [];
-    grouped[s].push(p);
-  });
-
-  /* ── Sort stages by canonical order ──────────────────── */
-  const sortedStages = Object.keys(grouped).sort((a, b) => stageRank(a) - stageRank(b));
-
-  /* ── Summary stats ────────────────────────────────────── */
-  const total  = projects.length;
-  const greens = projects.filter(p => stageColor(p.recordStatus) === 'green').length;
-  const ambers = projects.filter(p => stageColor(p.recordStatus) === 'amber').length;
-  const reds   = projects.filter(p => stageColor(p.recordStatus) === 'red').length;
-  const avgDays = projects.length
-    ? Math.round(projects.reduce((s, p) => s + (parseInt(p.daysInStatus) || 0), 0) / projects.length)
-    : 0;
-
-  /* ── Build HTML ──────────────────────────────────────── */
-  const stageCardsHtml = sortedStages.map(stage => {
-    const ps   = grouped[stage];
-    const sc   = stageColor(stage);
-    const avg  = Math.round(ps.reduce((s, p) => s + (parseInt(p.daysInStatus) || 0), 0) / ps.length);
-
-    const projectRowsHtml = ps
-      .sort((a, b) => (parseInt(b.daysInStatus)||0) - (parseInt(a.daysInStatus)||0))
-      .map(p => {
-        const nm   = p.name?.trim() || 'Unknown';
-        const init = initials(nm);
-        const bg   = avatarColor(nm);
-        const days = parseInt(p.daysInStatus) || 0;
-        const dc   = days > 30 ? 'red' : days > 14 ? 'amber' : 'green';
-        const rep  = p.user?.name ? `${p.user.name}` : '';
-        return `
-          <div class="project-row" data-project-id="${escHtml(p.id)}" data-project-name="${escHtml(nm)}" data-stage="${escHtml(stage)}">
-            <div class="project-avatar-sm" style="background:${bg}">${escHtml(init)}</div>
-            <div class="project-info">
-              <div class="project-name">${escHtml(nm)}</div>
-              <div class="project-sub">${rep ? escHtml(rep) + ' · ' : ''}${escHtml(stage)}</div>
-            </div>
-            <div class="project-days-badge ${dc}">${days}d</div>
-          </div>`;
-      }).join('');
-
-    return `
-      <div class="stage-card" data-stage="${escHtml(stage)}">
-        <div class="stage-header">
-          <div class="stage-color-bar ${sc}"></div>
-          <div class="stage-info">
-            <div class="stage-name">${escHtml(stage)}</div>
-            <div class="stage-meta">avg ${avg}d in stage</div>
-          </div>
-          <div class="stage-right">
-            <div class="stage-badge ${sc}">${ps.length}</div>
-            <div class="stage-chevron">›</div>
-          </div>
-        </div>
-        <div class="stage-projects">
-          <div class="stage-divider"></div>
-          ${projectRowsHtml}
-        </div>
-      </div>`;
-  }).join('');
-
-  scrollable.innerHTML = `
-    <div class="pipeline-summary-card">
-      <div class="pipeline-stat">
-        <div class="pipeline-stat-value blue">${total}</div>
-        <div class="pipeline-stat-label">Total</div>
-      </div>
-      <div class="pipeline-stat">
-        <div class="pipeline-stat-value green">${greens}</div>
-        <div class="pipeline-stat-label">On Track</div>
-      </div>
-      <div class="pipeline-stat">
-        <div class="pipeline-stat-value amber">${ambers}</div>
-        <div class="pipeline-stat-label">Active</div>
-      </div>
-      <div class="pipeline-stat">
-        <div class="pipeline-stat-value red">${reds}</div>
-        <div class="pipeline-stat-label">At Risk</div>
-      </div>
-    </div>
-
-    <div class="pipeline-section-label">${sortedStages.length} stages · ${total} projects</div>
-
-    ${stageCardsHtml}
-  `;
-
-  /* ── Wire up expand/collapse ──────────────────────────── */
-  scrollable.querySelectorAll('.stage-card').forEach(card => {
-    const header = card.querySelector('.stage-header');
-    header.addEventListener('click', () => {
-      card.classList.toggle('expanded');
-    });
-  });
-
-  /* ── Wire up project rows → open chat ────────────────── */
-  scrollable.querySelectorAll('.project-row').forEach(row => {
-    row.addEventListener('click', () => {
-      const pid   = row.dataset.projectId;
-      const pname = row.dataset.projectName;
-      const pstage= row.dataset.stage;
-      // Find the matching project in allProjects for full data
-      const proj  = allProjects.find(p => p.id === pid);
-      if (proj) {
-        // Build a synthetic item dataset to reuse openChat
-        const synthetic = {
-          dataset: {
-            projectId:    proj.id,
-            name:         proj.name?.trim() || pname,
-            stage:        proj.recordStatus || pstage,
-            statusColor:  stageColor(proj.recordStatus || pstage),
-            roomId:       proj.projectGeneralChatRoom?.id || '',
-            daysInStatus: String(proj.daysInStatus || '0'),
-            repName:      proj.user?.name || '',
-          }
-        };
-        openChat(synthetic);
-      }
-    });
-  });
-}
-
-/* ── Pipeline refresh ────────────────────────────────────── */
-pipelineRefreshBtn.addEventListener('click', () => {
-  pipelineRefreshDot.style.background = '#FF9500';
-  loadPipeline();
 });
 
 /* ══════════════════════════════════════════════════════════
@@ -1413,28 +1117,15 @@ const MESSAGES_QUERY = `
   }
 `;
 
-const CREATE_MESSAGE_MUTATION = `
-  mutation CreateMessage($roomId: ID!, $content: String!) {
-    createMessage(roomId: $roomId, content: $content) {
-      id
-      content
-      role
-      createdAt
-      aiAgent
-      user { name }
-    }
-  }
-`;
-
 function openChat(item) {
-  const name    = item.dataset.name;
-  const stage   = item.dataset.stage;
-  const sc      = item.dataset.statusColor;
-  const roomId  = item.dataset.roomId;
-  const days    = item.dataset.daysInStatus;
-  const repName = item.dataset.repName;
-  const bg      = avatarColor(name);
-  const init    = initials(name);
+  const name      = item.dataset.name;
+  const stage     = item.dataset.stage;
+  const sc        = item.dataset.statusColor;
+  const roomId    = item.dataset.roomId;
+  const days      = item.dataset.daysInStatus;
+  const repName   = item.dataset.repName;
+  const bg        = avatarColor(name);
+  const init      = initials(name);
 
   activeProject = { id: item.dataset.projectId, name, stage, roomId, daysInStatus: days, repName };
 
@@ -1443,14 +1134,16 @@ function openChat(item) {
   headerAvatar.textContent = init;
   headerName.textContent   = name;
 
+  // Stage badge
   const stageColors = { green:'#34C759', amber:'#FF9500', red:'#FF3B30' };
   const dot = sc ? `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${stageColors[sc]};margin-right:4px;vertical-align:middle;"></span>` : '';
   headerStage.innerHTML = `${dot}${escHtml(stage)} · ${days}d`;
 
-  // Slide in
+  // Slide in immediately
   viewList.classList.add('pushed');
   viewChat.classList.add('active');
 
+  // Show loading state in messages area while fetching
   msgContent.innerHTML = '';
   typingEl.style.display = 'none';
 
@@ -1458,6 +1151,7 @@ function openChat(item) {
     showChatLoading();
     fetchMessages(roomId);
   } else {
+    // No room yet — show empty state
     showNoRoomState(name, stage, days);
   }
 }
@@ -1472,7 +1166,7 @@ function showChatLoading() {
 
 function showNoRoomState(name, stage, days) {
   msgContent.innerHTML = `
-    <div class="empty-state" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 24px;gap:8px;">
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 24px;gap:8px;">
       <div style="font-size:32px">💬</div>
       <div style="font-size:15px;font-weight:600;color:#fff">${escHtml(name)}</div>
       <div style="font-size:13px;color:#636366;text-align:center">${escHtml(stage)} · ${days} days<br>No Clarity conversation yet.</div>
@@ -1483,13 +1177,14 @@ function showNoRoomState(name, stage, days) {
 async function fetchMessages(roomId) {
   try {
     const data = await gql(MESSAGES_QUERY, { roomId });
-    renderMessages(data.messages || []);
+    const msgs = data.messages || [];
+    renderMessages(msgs);
   } catch (err) {
     console.error('fetchMessages:', err);
     msgContent.innerHTML = `
       <div class="error-state">
         <div class="error-icon">⚠️</div>
-        <div class="error-text">Couldn't load messages.<br><small style="color:#444">${escHtml(err.message)}</small></div>
+        <div class="error-text">Couldn't load messages.<br><small style="color:#444">${err.message}</small></div>
       </div>`;
   }
 }
@@ -1499,7 +1194,7 @@ function renderMessages(msgs) {
 
   if (!msgs.length) {
     msgContent.innerHTML = `
-      <div class="empty-state" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 24px;gap:8px;">
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 24px;gap:8px;">
         <div style="font-size:32px">✦</div>
         <div style="font-size:13px;color:#636366;text-align:center">Start the conversation.<br>Ask Clarity anything about this project.</div>
       </div>`;
@@ -1507,19 +1202,18 @@ function renderMessages(msgs) {
     return;
   }
 
+  // Messages come back newest-first from some APIs; sort oldest-first
   const sorted = [...msgs].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-
-  /* Track the latest message id for polling */
-  if (sorted.length) lastKnownMsgId = sorted[sorted.length - 1].id;
 
   let lastTs   = null;
   let lastRole = null;
 
   sorted.forEach((msg, i) => {
-    const role  = msg.role === 'assistant' ? 'received' : 'sent';
-    const plain = stripHtml(msg.content);
+    const role    = msg.role === 'assistant' ? 'received' : 'sent';
+    const plain   = stripHtml(msg.content);
     if (!plain) return;
 
+    // Date divider — show if first message or >30 min gap
     const msgDate = new Date(msg.createdAt);
     const showTs  = !lastTs || (msgDate - lastTs) > 30 * 60 * 1000;
     if (showTs) {
@@ -1531,7 +1225,8 @@ function renderMessages(msgs) {
     }
 
     const isGroupGap = lastRole !== null && lastRole !== role && !showTs;
-    const isLast = (() => {
+    const isLast     = i === sorted.length - 1 || (() => {
+      // Is the next message of a different role or has a timestamp break?
       for (let j = i + 1; j < sorted.length; j++) {
         const next = sorted[j];
         if (!stripHtml(next.content)) continue;
@@ -1543,6 +1238,7 @@ function renderMessages(msgs) {
 
     const row = document.createElement('div');
     row.className = `msg-row ${role}${isGroupGap ? ' group-gap' : ''}`;
+    row.dataset.msgId = msg.id;
 
     if (role === 'received') {
       const av = document.createElement('div');
@@ -1555,8 +1251,10 @@ function renderMessages(msgs) {
     bubble.className = `bubble ${role}${isLast ? ' tail' : ''}`;
     bubble.textContent = plain;
     row.appendChild(bubble);
+
     msgContent.appendChild(row);
 
+    // Delivery receipt on last sent message
     if (role === 'sent' && isLast) {
       const dr = document.createElement('div');
       dr.className = 'delivery-row';
@@ -1572,12 +1270,10 @@ function renderMessages(msgs) {
 
 /* ── Back ────────────────────────────────────────────────── */
 function goBack() {
-  stopPolling();
+  clearPolling();
   viewChat.classList.remove('active');
   viewList.classList.remove('pushed');
   activeProject = null;
-  lastKnownMsgId = null;
-  sendPending = false;
   setTimeout(() => {
     msgContent.innerHTML = '';
     typingEl.style.display = 'none';
@@ -1589,12 +1285,36 @@ function scrollToBottom(smooth = true) {
   messagesArea.scrollTo({ top: messagesArea.scrollHeight, behavior: smooth ? 'smooth' : 'instant' });
 }
 
-/* ── Optimistic bubble helpers ───────────────────────────── */
-function appendOptimisticBubble(text) {
-  /* Remove empty-state placeholder if present */
-  const emptyEl = msgContent.querySelector('.empty-state');
+/* ── Send message — real 2-way via createMessage mutation ─── */
+const CREATE_MESSAGE_MUTATION = `
+  mutation SendMessage($input: CreateMessageInput!) {
+    createMessage(input: $input) {
+      success
+    }
+  }
+`;
+
+let pollTimer = null;
+let pollDeadline = null;
+let lastKnownMsgId = null;   // track newest message before send
+
+async function sendMessage() {
+  const text = msgInput.value.trim();
+  if (!text || !activeProject) return;
+  if (!activeProject.roomId) {
+    showToast('No chat room for this project yet.');
+    return;
+  }
+
+  msgInput.value = '';
+  msgInput.style.height = 'auto';
+  sendBtn.classList.add('inactive');
+
+  // Clear empty-state if present
+  const emptyEl = msgContent.querySelector('[style*="flex-direction:column"]');
   if (emptyEl) emptyEl.remove();
 
+  // Optimistic sent bubble
   const row = document.createElement('div');
   row.className = 'msg-row sent group-gap';
   const bubble = document.createElement('div');
@@ -1605,121 +1325,93 @@ function appendOptimisticBubble(text) {
 
   const dr = document.createElement('div');
   dr.className = 'delivery-row';
-  dr.id = 'optimistic-receipt';
   dr.innerHTML = '<span class="delivery-receipt">Sending…</span>';
   msgContent.appendChild(dr);
   scrollToBottom();
-  return dr;
+
+  // Record the newest msg id we know about so we can detect the reply
+  lastKnownMsgId = getMostRecentMsgId();
+
+  try {
+    await gql(CREATE_MESSAGE_MUTATION, {
+      input: {
+        roomId: activeProject.roomId,
+        attributes: {
+          content: text,
+          role: 'user',
+          skipAiResponse: false,
+        }
+      }
+    });
+    dr.innerHTML = '<span class="delivery-receipt">Delivered</span>';
+    scrollToBottom();
+
+    // Start polling for Clarity's reply
+    startPollingForReply(activeProject.roomId);
+
+  } catch (err) {
+    console.error('sendMessage:', err);
+    dr.innerHTML = '<span class="delivery-receipt" style="color:#FF3B30">Failed to send</span>';
+    scrollToBottom();
+  }
 }
 
-function markDelivered(dr) {
-  if (dr) dr.innerHTML = '<span class="delivery-receipt">Delivered</span>';
+function getMostRecentMsgId() {
+  // Find the id of the most recently rendered message bubble
+  const rows = msgContent.querySelectorAll('.msg-row[data-msg-id]');
+  if (!rows.length) return null;
+  return rows[rows.length - 1].dataset.msgId || null;
+}
+
+function startPollingForReply(roomId) {
+  clearPolling();
+  typingEl.style.display = 'flex';
   scrollToBottom();
-}
 
-function appendAIBubble(text) {
-  typingEl.style.display = 'none';
-  const rRow = document.createElement('div');
-  rRow.className = 'msg-row received group-gap';
-  const av = document.createElement('div');
-  av.className = 'msg-avatar';
-  av.textContent = '✦';
-  const rb = document.createElement('div');
-  rb.className = 'bubble received tail';
-  rb.textContent = text;
-  rRow.appendChild(av);
-  rRow.appendChild(rb);
-  msgContent.appendChild(rRow);
-  scrollToBottom();
-}
+  const sent = Date.now();
+  const TIMEOUT = 45000;   // 45s max wait
+  const INTERVAL = 2500;   // poll every 2.5s
 
-/* ── Stop AI response polling ────────────────────────────── */
-function stopPolling() {
-  if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
-}
-
-/* ── Poll for Clarity AI response every 2s ───────────────── */
-function startPollingForResponse(roomId, afterMsgId) {
-  stopPolling();
-  let attempts = 0;
-  const MAX_ATTEMPTS = 30; // 60s max
-
-  pollInterval = setInterval(async () => {
-    attempts++;
-    if (attempts > MAX_ATTEMPTS) {
-      stopPolling();
+  pollTimer = setInterval(async () => {
+    if (Date.now() - sent > TIMEOUT) {
+      clearPolling();
       typingEl.style.display = 'none';
-      return;
-    }
-    /* Guard: if user has navigated away from this room, stop */
-    if (!activeProject || activeProject.roomId !== roomId) {
-      stopPolling();
       return;
     }
     try {
       const data = await gql(MESSAGES_QUERY, { roomId });
-      const msgs = data.messages || [];
-      const sorted = msgs.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-      /* Find the newest assistant message that arrived after our sent message */
-      const newAI = sorted.find(
-        m => m.role === 'assistant' && m.id !== afterMsgId && m.id > afterMsgId
+      const msgs = (data.messages || []).sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+      // Look for a new assistant message with complete HTML (not mid-stream tool text)
+      const newAssistant = msgs.filter(m =>
+        m.role === 'assistant' &&
+        (m.content || '').includes('<div') &&
+        m.id !== lastKnownMsgId
       );
-      if (newAI) {
-        stopPolling();
-        const plain = stripHtml(newAI.content);
-        if (plain) appendAIBubble(plain);
+
+      if (newAssistant.length > 0) {
+        clearPolling();
+        typingEl.style.display = 'none';
+        // Re-render the full message list with the new reply
+        renderMessages(msgs);
       }
-    } catch (err) {
-      console.warn('poll error:', err);
+    } catch (e) {
+      console.warn('poll error:', e);
     }
-  }, 2000);
+  }, INTERVAL);
 }
 
-/* ── Send message ────────────────────────────────────────── */
-async function sendMessage() {
-  const text = msgInput.value.trim();
-  if (!text || !activeProject || sendPending) return;
+function clearPolling() {
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+}
 
-  const roomId = activeProject.roomId;
-  if (!roomId) {
-    /* No room: show inline error */
-    showNoRoomState(activeProject.name, activeProject.stage, activeProject.daysInStatus);
-    return;
-  }
-
-  sendPending = true;
-  msgInput.value = '';
-  msgInput.style.height = 'auto';
-  sendBtn.classList.remove('inactive');
-  sendBtn.classList.add('sending');
-
-  /* 1. Optimistic UI — bubble appears immediately */
-  const drEl = appendOptimisticBubble(text);
-
-  try {
-    /* 2. POST createMessage mutation */
-    const data = await gql(CREATE_MESSAGE_MUTATION, { roomId, content: text });
-    const sentMsg = data?.createMessage;
-
-    markDelivered(drEl);
-
-    /* 3. Show typing indicator, start polling for AI reply */
-    typingEl.style.display = 'flex';
-    scrollToBottom();
-
-    const afterId = sentMsg?.id || lastKnownMsgId || '0';
-    startPollingForResponse(roomId, afterId);
-
-  } catch (err) {
-    console.error('sendMessage:', err);
-    /* Mark failed */
-    if (drEl) drEl.innerHTML = '<span class="delivery-receipt" style="color:#FF3B30">⚠ Failed — tap to retry</span>';
-    drEl.style.cursor = 'pointer';
-    drEl.onclick = () => { drEl.remove(); msgInput.value = text; sendBtn.classList.remove('inactive'); };
-  } finally {
-    sendPending = false;
-    sendBtn.classList.remove('sending');
-  }
+/* ── Toast ───────────────────────────────────────────────── */
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:calc(80px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:#1c1c1e;color:#fff;padding:8px 16px;border-radius:20px;font-size:13px;z-index:999;white-space:nowrap;';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2500);
 }
 
 /* ── Input auto-resize & send btn state ─────────────────── */
@@ -1745,10 +1437,11 @@ if (typeof visualViewport !== 'undefined') {
   });
 }
 
-/* ── Live clock ──────────────────────────────────────────── */
+/* ── Live clock in status bar ────────────────────────────── */
 function updateClock() {
+  const now = new Date();
   document.getElementById('status-time').textContent =
-    new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 }
 updateClock();
 setInterval(updateClock, 30000);
@@ -1760,18 +1453,445 @@ if ('serviceWorker' in navigator) {
     .catch(e => console.log('SW err:', e));
 }
 
-/* ── Bootstrap ───────────────────────────────────────────── */
-(async () => {
-  const restored = await tryRestoreSession();
-  if (restored) {
-    dismissLogin();
-    loadProjects();
-  } else {
-    showLogin();
-    /* Prefill dev convenience — remove for prod */
-    // loginUserIdEl.value = '';
+/* ── Logout / switch rep ─────────────────────────────────── */
+document.getElementById('logout-btn').addEventListener('click', () => {
+  clearUser();
+  allProjects = [];
+  showLoginView();
+});
+
+/* ══════════════════════════════════════════════════════════
+   LOGIN VIEW (IFC-667)
+══════════════════════════════════════════════════════════ */
+const viewLogin = document.getElementById('view-login');
+const loginList = document.getElementById('login-list');
+
+const USERS_QUERY = `
+  query RepList {
+    users {
+      id
+      name
+      email
+      isSales
+      isAdmin
+    }
   }
-})();
+`;
+
+async function showLoginView() {
+  // Hide all other views
+  viewList.style.display = 'none';
+  viewPipeline.classList.remove('pipeline-active');
+  viewLogin.classList.remove('hidden');
+
+  loginList.innerHTML = `
+    <div class="login-loading">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Loading reps…</div>
+    </div>`;
+
+  try {
+    const data = await gql(USERS_QUERY, {}, null);  // bypass token (no userId)
+    const users = (data.users || [])
+      .filter(u => u.isSales || u.isAdmin)
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    loginList.innerHTML = '';
+    users.forEach(u => {
+      const row = document.createElement('div');
+      row.className = 'login-user-row';
+      const bg   = avatarColor(u.name);
+      const init = initials(u.name);
+      row.innerHTML = `
+        <div class="login-user-avatar" style="background:${bg}">${init}</div>
+        <div class="login-user-info">
+          <div class="login-user-name">${escHtml(u.name)}</div>
+          <div class="login-user-email">${escHtml(u.email)}</div>
+        </div>
+        <div class="login-chevron">›</div>`;
+      row.addEventListener('click', () => loginAs(u));
+      loginList.appendChild(row);
+    });
+  } catch (err) {
+    loginList.innerHTML = `
+      <div style="padding:20px;text-align:center;color:#636366;font-size:14px;">
+        Failed to load users.<br><small>${err.message}</small>
+      </div>`;
+  }
+}
+
+function loginAs(user) {
+  saveUser(user);
+  viewLogin.classList.add('hidden');
+  viewList.style.display = '';
+  // Reset and load this rep's projects
+  allProjects = [];
+  pipelineProjects = [];
+  pipelineLoaded = false;
+  loadProjects();
+}
+
+/* ── Bootstrap ───────────────────────────────────────────── */
+loadStoredUser();
+if (currentUser) {
+  // Already logged in — go straight to messages
+  viewLogin.classList.add('hidden');
+  loadProjects();
+} else {
+  showLoginView();
+}
+
+/* ══════════════════════════════════════════════════════════
+   PIPELINE VIEW (IFC-656)
+══════════════════════════════════════════════════════════ */
+
+/* Pipeline stage buckets — ordered, canonical */
+const PIPELINE_BUCKETS = [
+  {
+    label: 'Leads',
+    color: 'amber',
+    stages: ['LEADS','LEAD','Lead','CONTACTED','PRE-CALL','🔥🔥LEADS - NEEDS INSPECTION','Prospect'],
+  },
+  {
+    label: 'Inspected',
+    color: 'amber',
+    stages: ['INSPECTED','🔥 Inspection Done','SCHEDULE REINSPECT'],
+  },
+  {
+    label: 'Enough Damage',
+    color: 'green',
+    stages: ['ENOUGH DAMAGE','🔥🔥 Waiting for Storm Date / Enough Damage'],
+  },
+  {
+    label: 'Adj / Post Mtg',
+    color: 'amber',
+    stages: ['ADJ SCHEDULED','POST ADJ. MEETING','INS. RESPONDED','❌ ADJ MTG done - NOT APPROVED'],
+  },
+  {
+    label: 'Signed',
+    color: 'green',
+    stages: ['SIGNED','✅ Signed Contract'],
+  },
+  {
+    label: 'Active',
+    color: 'amber',
+    stages: ['REP HANDS','OFFICE HANDS',"VANESSA'S HANDS","WILL'S HANDS","STETSON'S HANDS",'SUPP SENT','SUPP COMPLETED','✅ Finalize Scope 4 Install'],
+  },
+  {
+    label: 'Billed',
+    color: 'green',
+    stages: ['BILLED','BILLED HOME','BILLED-BACKEND','💰 Paid (needs cap out)','💰💰 BILLING (👍 final RCV)','💰⏰ Billed Homeowner','💰 Submitted. Waiting on FIN RCV'],
+  },
+  {
+    label: 'Capped',
+    color: 'blue',
+    stages: ['CAPPED','NEW ROOF','Membership Program','Before Bought'],
+  },
+  {
+    label: 'PA / Legal',
+    color: 'red',
+    stages: ['PA-LAW','PA-LAW-APPRAISAL-EXPERT','PA-LAW-APPRAISAL','❌ Appraisal / PA /Attorney'],
+  },
+  {
+    label: 'Lost / Closed',
+    color: 'gray',
+    stages: ['LOST','Lost','NOT ENOUGH DAMAGE','Dead','CSV Migrated','Past Clients','Completed Repairs (non Warranty)','Completed Repairs (IFC Warranty)','8. 👍 COMPLETE / CLOSED','Closed','Closed Out - COMPLETE','PAID / CLOSED','Completed','After Bought'],
+  },
+];
+
+/* Build a lookup map: raw stage string → bucket index */
+const STAGE_TO_BUCKET = new Map();
+PIPELINE_BUCKETS.forEach((b, i) => {
+  b.stages.forEach(s => STAGE_TO_BUCKET.set(s, i));
+});
+
+/* State */
+let pipelineProjects  = [];   // all projects (paginated)
+let pipelineLoaded    = false;
+let pipelineLoading   = false;
+let openBuckets       = new Set();  // which buckets are expanded
+
+const viewPipeline = document.getElementById('view-pipeline');
+const pipelineScrollable = document.getElementById('pipeline-scrollable');
+
+/* ── Nav switching ───────────────────────────────────────── */
+function showTab(tab) {
+  // tab = 'messages' | 'pipeline'
+  if (tab === 'messages') {
+    viewList.style.display = '';
+    viewPipeline.classList.remove('pipeline-active');
+    // restore list nav active state
+    document.querySelectorAll('#list-nav-messages, #list-nav-pipeline, #list-nav-app').forEach(el => el.classList.remove('active'));
+    document.getElementById('list-nav-messages').classList.add('active');
+  } else if (tab === 'pipeline') {
+    viewList.style.display = 'none';
+    viewPipeline.classList.add('pipeline-active');
+    document.querySelectorAll('#pipeline-nav-messages, #pipeline-nav-pipeline, #pipeline-nav-app').forEach(el => el.classList.remove('active'));
+    document.getElementById('pipeline-nav-pipeline').classList.add('active');
+    if (!pipelineLoaded && !pipelineLoading) {
+      loadPipelineProjects();
+    }
+  }
+}
+
+document.getElementById('list-nav-pipeline').addEventListener('click', () => showTab('pipeline'));
+document.getElementById('pipeline-nav-messages').addEventListener('click', () => showTab('messages'));
+
+/* ── Load ALL projects (paginated) ───────────────────────── */
+const PIPELINE_LIST_QUERY = `
+  query PipelineProjects($page: ID) {
+    projects(perPage: "500", page: $page) {
+      projects {
+        id name recordStatus daysInStatus updatedAt
+        user { id name }
+        contact { id name }
+        projectGeneralChatRoom { id lastMessage { content createdAt role user { name } } }
+      }
+      totalPages
+    }
+  }
+`;
+
+async function loadPipelineProjects() {
+  if (pipelineLoading) return;
+  pipelineLoading = true;
+  pipelineScrollable.innerHTML = `
+    <div class="loading-state">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Loading pipeline…</div>
+    </div>`;
+
+  try {
+    // If we already loaded projects in the Messages tab, reuse them
+    if (allProjects.length > 0 && allProjects.length >= 500) {
+      // Paginate to get the rest
+      pipelineProjects = [...allProjects];
+    }
+
+    // Always paginate fully for pipeline accuracy
+    const all = [];
+    let page = 1;
+    let totalPages = 1;
+    do {
+      const data = await gql(PIPELINE_LIST_QUERY, { page: String(page) });
+      all.push(...(data.projects.projects || []));
+      totalPages = parseInt(data.projects.totalPages, 10);
+      page++;
+    } while (page <= totalPages && page <= 20);
+
+    pipelineProjects = all;
+    pipelineLoaded  = true;
+    pipelineLoading = false;
+    renderPipeline();
+  } catch (err) {
+    pipelineLoading = false;
+    pipelineScrollable.innerHTML = `
+      <div class="error-state">
+        <div class="error-icon">⚠️</div>
+        <div class="error-text">Couldn't load pipeline.<br><small style="color:#444">${err.message}</small></div>
+        <button class="retry-btn" id="pipeline-retry-btn">Try Again</button>
+      </div>`;
+    document.getElementById('pipeline-retry-btn')?.addEventListener('click', loadPipelineProjects);
+  }
+}
+
+/* ── Build pipeline data from projects ───────────────────── */
+function buildPipelineData(projects) {
+  const buckets = PIPELINE_BUCKETS.map(b => ({ ...b, projects: [] }));
+  const unknown = [];
+
+  projects.forEach(p => {
+    const stage = p.recordStatus || 'Unknown';
+    const idx   = STAGE_TO_BUCKET.get(stage);
+    if (idx !== undefined) {
+      buckets[idx].projects.push(p);
+    } else if (stage !== 'Unknown') {
+      unknown.push(p);
+    }
+  });
+
+  return buckets;
+}
+
+/* ── Render Pipeline ─────────────────────────────────────── */
+function renderPipeline() {
+  const buckets = buildPipelineData(pipelineProjects);
+  const total   = pipelineProjects.filter(p => p.recordStatus && p.recordType !== null).length;
+
+  // KPI cards — active pipeline only (exclude lost/closed/unknown)
+  const active = buckets.filter(b => b.label !== 'Lost / Closed').reduce((n, b) => n + b.projects.length, 0);
+  const inspected  = buckets.find(b => b.label === 'Inspected')?.projects.length   || 0;
+  const enoughDmg  = buckets.find(b => b.label === 'Enough Damage')?.projects.length || 0;
+  const billed     = buckets.find(b => b.label === 'Billed')?.projects.length      || 0;
+  const capped     = buckets.find(b => b.label === 'Capped')?.projects.length       || 0;
+  const paLegal    = buckets.find(b => b.label === 'PA / Legal')?.projects.length   || 0;
+
+  // Max count (for bar scaling) — among active buckets
+  const activeBuckets = buckets.filter(b => b.label !== 'Lost / Closed');
+  const maxCount = Math.max(...activeBuckets.map(b => b.projects.length), 1);
+
+  const html = [];
+
+  // KPI row
+  html.push(`<div class="kpi-row">`);
+  html.push(kpiCard('Active', active.toLocaleString(), 'projects', 'blue'));
+  html.push(kpiCard('Inspected', inspected, 'awaiting adj', 'amber'));
+  html.push(kpiCard('Enough Dmg', enoughDmg, 'ready to file', 'green'));
+  html.push(kpiCard('Billed', billed, 'collecting', 'green'));
+  html.push(kpiCard('Capped', capped, 'complete', 'blue'));
+  if (paLegal > 0) html.push(kpiCard('PA / Legal', paLegal, 'escalated', 'red'));
+  html.push(`</div>`);
+
+  // Divider
+  html.push(`
+    <div class="pipeline-section-header">
+      <div class="pipeline-section-title">All Stages</div>
+      <div class="pipeline-total">${pipelineProjects.length.toLocaleString()} projects</div>
+    </div>`);
+
+  // Bucket rows
+  buckets.forEach((bucket, i) => {
+    const count    = bucket.projects.length;
+    if (count === 0) return;
+    const barPct   = bucket.label === 'Lost / Closed'
+      ? 100
+      : Math.round((count / maxCount) * 100);
+    const isOpen   = openBuckets.has(i);
+    const colorClass = bucket.color;
+
+    html.push(`<div class="stage-bucket${isOpen ? ' open' : ''}" data-bucket-idx="${i}">`);
+    html.push(`
+      <div class="bucket-row">
+        <div class="bucket-left">
+          <div class="bucket-name">${escHtml(bucket.label)}</div>
+          <div class="bucket-bar-wrap">
+            <div class="bucket-bar ${colorClass}" style="width:${barPct}%"></div>
+          </div>
+        </div>
+        <div class="bucket-count ${colorClass}">${count}</div>
+        <div class="bucket-chevron">›</div>
+      </div>`);
+
+    // Project list (top 20, expand to see all)
+    html.push(`<div class="bucket-projects">`);
+    const sorted  = [...bucket.projects].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+    const preview = sorted.slice(0, 20);
+    const more    = sorted.length - 20;
+
+    preview.forEach(p => {
+      const nm   = (p.name || 'Unknown').trim();
+      const bg   = avatarColor(nm);
+      const init = initials(nm);
+      const rep  = p.user?.name ? `${escHtml(p.user.name)} · ` : '';
+      const days = p.daysInStatus || '0';
+      html.push(`
+        <div class="bucket-project-item" data-project-id="${escHtml(p.id)}" data-room-id="${escHtml(p.projectGeneralChatRoom?.id || '')}" data-name="${escHtml(nm)}" data-stage="${escHtml(p.recordStatus || '')}" data-days="${escHtml(days)}" data-rep="${escHtml(p.user?.name || '')}">
+          <div class="bp-avatar" style="background:${bg}">${init}</div>
+          <div class="bp-info">
+            <div class="bp-name">${escHtml(nm)}</div>
+            <div class="bp-meta">${rep}${escHtml(p.recordStatus || '—')}</div>
+          </div>
+          <div class="bp-days">${days}d</div>
+        </div>`);
+    });
+
+    if (more > 0) {
+      html.push(`<div class="bucket-show-more" data-bucket-idx="${i}" data-show-all="false">+ ${more} more</div>`);
+    }
+
+    html.push(`</div>`); // .bucket-projects
+    html.push(`</div>`); // .stage-bucket
+  });
+
+  pipelineScrollable.innerHTML = html.join('');
+
+  // Wire up bucket expand/collapse
+  pipelineScrollable.querySelectorAll('.stage-bucket').forEach(el => {
+    el.querySelector('.bucket-row').addEventListener('click', () => {
+      const idx = parseInt(el.dataset.bucketIdx, 10);
+      if (openBuckets.has(idx)) {
+        openBuckets.delete(idx);
+        el.classList.remove('open');
+      } else {
+        openBuckets.add(idx);
+        el.classList.add('open');
+      }
+    });
+  });
+
+  // Wire up "show more"
+  pipelineScrollable.querySelectorAll('.bucket-show-more').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const idx    = parseInt(btn.dataset.bucketIdx, 10);
+      const bucket = buildPipelineData(pipelineProjects)[idx];
+      const sorted = [...bucket.projects].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+      const container = btn.parentElement;
+      btn.remove();
+      sorted.slice(20).forEach(p => {
+        const nm   = (p.name || 'Unknown').trim();
+        const bg   = avatarColor(nm);
+        const init = initials(nm);
+        const rep  = p.user?.name ? `${escHtml(p.user.name)} · ` : '';
+        const days = p.daysInStatus || '0';
+        const item = document.createElement('div');
+        item.className = 'bucket-project-item';
+        item.dataset.projectId = p.id;
+        item.dataset.roomId    = p.projectGeneralChatRoom?.id || '';
+        item.dataset.name      = nm;
+        item.dataset.stage     = p.recordStatus || '';
+        item.dataset.days      = days;
+        item.dataset.rep       = p.user?.name || '';
+        item.innerHTML = `
+          <div class="bp-avatar" style="background:${bg}">${init}</div>
+          <div class="bp-info">
+            <div class="bp-name">${escHtml(nm)}</div>
+            <div class="bp-meta">${rep}${escHtml(p.recordStatus || '—')}</div>
+          </div>
+          <div class="bp-days">${days}d</div>`;
+        container.appendChild(item);
+        item.addEventListener('click', () => openProjectFromPipeline(item));
+      });
+    });
+  });
+
+  // Wire up project taps → open chat
+  pipelineScrollable.querySelectorAll('.bucket-project-item').forEach(item => {
+    item.addEventListener('click', () => openProjectFromPipeline(item));
+  });
+}
+
+function kpiCard(label, value, sub, color) {
+  return `<div class="kpi-card ${color}">
+    <div class="kpi-value">${value}</div>
+    <div class="kpi-label">${label}</div>
+    <div class="kpi-sub">${sub}</div>
+  </div>`;
+}
+
+/* ── Open project from Pipeline → jump to chat ───────────── */
+function openProjectFromPipeline(item) {
+  const name    = item.dataset.name;
+  const stage   = item.dataset.stage;
+  const roomId  = item.dataset.roomId;
+  const days    = item.dataset.days;
+  const rep     = item.dataset.rep;
+  const sc      = stageColor(stage);
+
+  // Switch to messages tab first (so back chevron shows Clarity)
+  showTab('messages');
+
+  // Then open chat — synthesise a fake dataset element
+  const fake = { dataset: {
+    projectId: item.dataset.projectId,
+    name, stage,
+    statusColor: sc,
+    roomId: roomId || '',
+    daysInStatus: days,
+    repName: rep,
+  }};
+  openChat(fake);
+}
 </script>
 </body>
 </html>

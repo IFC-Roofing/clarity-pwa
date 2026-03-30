@@ -1190,6 +1190,16 @@ async function resolveAgendaRoom(projectId) {
   return data.findOrCreateAgendaProjectRoom?.roomId || null;
 }
 
+
+/* ── Resolve correct user-scoped room (matches app Clarity tab) ── */
+const RESOLVE_ROOM_QUERY = `
+  query ResolveRoom($projectId: ID!) {
+    projectGeneralChatRoom(projectId: $projectId) {
+      id
+    }
+  }
+`;
+
 const MESSAGES_QUERY = `
   query RoomMessages($roomId: ID!) {
     messages(roomId: $roomId) {
@@ -1203,7 +1213,7 @@ const MESSAGES_QUERY = `
   }
 `;
 
-function openChat(item) {
+async function openChat(item) {
   const name      = item.dataset.name;
   const stage     = item.dataset.stage;
   const sc        = item.dataset.statusColor;
@@ -1233,11 +1243,24 @@ function openChat(item) {
   msgContent.innerHTML = '';
   typingEl.style.display = 'none';
 
-  if (roomId) {
-    showChatLoading();
-    fetchMessages(roomId);
-  } else {
-    showNoRoomState(name, stage, days);
+  const projectId = item.dataset.projectId;
+  showChatLoading();
+  try {
+    // Resolve the correct user-scoped room (same as app Clarity tab)
+    const roomData = await gql(RESOLVE_ROOM_QUERY, { projectId: String(projectId) });
+    const resolvedRoomId = roomData.projectGeneralChatRoom?.id;
+    if (resolvedRoomId) {
+      activeProject.roomId = resolvedRoomId;
+      fetchMessages(resolvedRoomId);
+    } else if (roomId) {
+      fetchMessages(roomId);
+    } else {
+      showNoRoomState(name, stage, days);
+    }
+  } catch (err) {
+    console.warn('resolveRoom failed:', err);
+    if (roomId) { fetchMessages(roomId); }
+    else { showNoRoomState(name, stage, days); }
   }
 }
 

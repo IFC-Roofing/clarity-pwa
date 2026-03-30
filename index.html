@@ -1203,7 +1203,7 @@ const MESSAGES_QUERY = `
   }
 `;
 
-async function openChat(item) {
+function openChat(item) {
   const name      = item.dataset.name;
   const stage     = item.dataset.stage;
   const sc        = item.dataset.statusColor;
@@ -1233,27 +1233,7 @@ async function openChat(item) {
   msgContent.innerHTML = '';
   typingEl.style.display = 'none';
 
-  // Always resolve the agenda_project room (same as app Clarity tab)
-  const projectId = item.dataset.projectId;
-  if (projectId) {
-    showChatLoading();
-    try {
-      const agendaRoomId = await resolveAgendaRoom(projectId);
-      if (agendaRoomId) {
-        activeProject.roomId = agendaRoomId;
-        fetchMessages(agendaRoomId);
-      } else if (roomId) {
-        // Fallback to projectGeneralChatRoom
-        fetchMessages(roomId);
-      } else {
-        showNoRoomState(name, stage, days);
-      }
-    } catch (err) {
-      console.warn('resolveAgendaRoom failed, falling back:', err);
-      if (roomId) { fetchMessages(roomId); }
-      else { showNoRoomState(name, stage, days); }
-    }
-  } else if (roomId) {
+  if (roomId) {
     showChatLoading();
     fetchMessages(roomId);
   } else {

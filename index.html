@@ -1238,7 +1238,7 @@ function renderMessages(msgs) {
   }
 
   // Messages come back newest-first from some APIs; sort oldest-first
-  const sorted = [...msgs].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+  const sorted = [...msgs].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt) || Number(a.id) - Number(b.id));
 
   let lastTs   = null;
   let lastRole = null;
@@ -1381,6 +1381,16 @@ async function sendMessage() {
     dr.innerHTML = '<span class="delivery-receipt">Delivered</span>';
     scrollToBottom();
 
+    // Re-fetch all messages to get correct server-assigned order
+    setTimeout(async () => {
+      try {
+        const data = await gql(MESSAGES_QUERY, { roomId: activeProject.roomId });
+        const msgs = data.messages || [];
+        if (msgs.length) renderMessages(msgs);
+        scrollToBottom(false);
+      } catch(e) { console.warn('post-send refetch:', e); }
+    }, 500);
+
     // Start polling for Clarity's reply
     startPollingForReply(activeProject.roomId);
 
@@ -1415,7 +1425,7 @@ function startPollingForReply(roomId) {
     }
     try {
       const data = await gql(MESSAGES_QUERY, { roomId });
-      const msgs = (data.messages || []).sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+      const msgs = (data.messages || []).sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt) || Number(a.id) - Number(b.id));
 
       // Look for a new assistant message with complete HTML (not mid-stream tool text)
       const newAssistant = msgs.filter(m =>

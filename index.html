@@ -987,7 +987,7 @@ const LIST_QUERY = `
         updatedAt
         contact { id name }
         user { id name }
-        projectGeneralChatRoom {
+        clientRoom {
           id
           lastMessage {
             content
@@ -1097,8 +1097,8 @@ function renderList(projects) {
     const nm       = p.name?.trim() || 'Unknown';
     const stage    = p.recordStatus || '—';
     const sc       = stageColor(stage);
-    const roomId   = p.projectGeneralChatRoom?.id || null;
-    const lastMsg  = p.projectGeneralChatRoom?.lastMessage;
+    const roomId   = p.clientRoom?.id || null;
+    const lastMsg  = p.clientRoom?.lastMessage;
     const init     = initials(nm);
     const bg       = avatarColor(nm);
     const ts       = relativeTime(p.updatedAt);
@@ -1769,7 +1769,7 @@ const PIPELINE_LIST_QUERY = `
         id name recordStatus daysInStatus updatedAt
         user { id name }
         contact { id name }
-        projectGeneralChatRoom { id lastMessage { content createdAt role user { name } } }
+        clientRoom { id lastMessage { content createdAt role user { name } } }
       }
       totalPages
     }
@@ -1909,7 +1909,7 @@ function renderPipeline() {
       const rep  = p.user?.name ? `${escHtml(p.user.name)} · ` : '';
       const days = p.daysInStatus || '0';
       html.push(`
-        <div class="bucket-project-item" data-project-id="${escHtml(p.id)}" data-room-id="${escHtml(p.projectGeneralChatRoom?.id || '')}" data-name="${escHtml(nm)}" data-stage="${escHtml(p.recordStatus || '')}" data-days="${escHtml(days)}" data-rep="${escHtml(p.user?.name || '')}">
+        <div class="bucket-project-item" data-project-id="${escHtml(p.id)}" data-room-id="${escHtml(p.clientRoom?.id || '')}" data-name="${escHtml(nm)}" data-stage="${escHtml(p.recordStatus || '')}" data-days="${escHtml(days)}" data-rep="${escHtml(p.user?.name || '')}">
           <div class="bp-avatar" style="background:${bg}">${init}</div>
           <div class="bp-info">
             <div class="bp-name">${escHtml(nm)}</div>
@@ -1961,7 +1961,7 @@ function renderPipeline() {
         const item = document.createElement('div');
         item.className = 'bucket-project-item';
         item.dataset.projectId = p.id;
-        item.dataset.roomId    = p.projectGeneralChatRoom?.id || '';
+        item.dataset.roomId    = p.clientRoom?.id || '';
         item.dataset.name      = nm;
         item.dataset.stage     = p.recordStatus || '';
         item.dataset.days      = days;

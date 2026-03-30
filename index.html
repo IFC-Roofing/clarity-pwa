@@ -2184,14 +2184,65 @@ function findGlobalRoom(rooms, agent) {
   return rooms.find(r => r.topic?.toLowerCase() === topic.toLowerCase()) || null;
 }
 
+
+/* ── Resolve global agent room (Mark, Guide, Feedback, Clarity) ── */
+const AGENT_CHAT_TYPES = { clarity: 'global_chat', mark: 'mark', guide: 'guide', feedback: 'feedback' };
+
+const GET_ROOMS_QUERY = `
+  query GetRooms($chattableId: ID!, $chattableType: String!, $chatType: String!) {
+    rooms(chattableId: $chattableId, chattableType: $chattableType, chatType: $chatType) {
+      rooms { id topic chatType }
+    }
+  }
+`;
+
+const CREATE_ROOM_MUTATION = `
+  mutation CreateRoom($input: CreateRoomInput!) {
+    createRoom(input: $input) {
+      room { id topic chatType }
+    }
+  }
+`;
+
+async function resolveGlobalAgentRoom(agent) {
+  const chatType = AGENT_CHAT_TYPES[agent] || 'global_chat';
+  const userId = currentUser?.id;
+  if (!userId) return null;
+
+  try {
+    // Try to find existing room
+    const data = await gql(GET_ROOMS_QUERY, {
+      chattableId: String(userId),
+      chattableType: 'User',
+      chatType: chatType,
+    });
+    const rooms = data.rooms?.rooms || [];
+    if (rooms.length > 0) return rooms[0];
+
+    // Create if not found
+    const createData = await gql(CREATE_ROOM_MUTATION, {
+      input: {
+        attributes: {
+          chattableType: 'User',
+          chattableId: String(userId),
+          chatType: chatType,
+        }
+      }
+    });
+    return createData.createRoom?.room || null;
+  } catch (e) {
+    console.warn('resolveGlobalAgentRoom:', e);
+    return null;
+  }
+}
+
 document.querySelectorAll('.gallery-item.agent-clickable').forEach(chip => {
   chip.addEventListener('click', async () => {
     const agent = chip.dataset.agent;
     if (!agent) return;
 
-    // Use a fake item to open the global chat view
-    const rooms = await loadGlobalRooms();
-    const room  = findGlobalRoom(rooms, agent);
+    // Resolve the agent's global room (same as app)
+    const room = await resolveGlobalAgentRoom(agent);
 
     const agentNames = { clarity: 'Clarity', mark: 'Mark', guide: 'Guide', feedback: 'IFC Feedback' };
     const agentBgs   = {

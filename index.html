@@ -1516,7 +1516,7 @@ function decodeJwtPayload(token) {
   return JSON.parse(atob(base64));
 }
 
-const USERS_QUERY = '{ users { id name email } }';
+const USERS_QUERY = '{ users(scoreboard: false) { id name email } }';
 
 window.handleGoogleCredential = async function(response) {
   setLoginLoading(true);

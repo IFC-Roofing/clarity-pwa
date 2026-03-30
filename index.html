@@ -1175,6 +1175,21 @@ refreshBtn.addEventListener('click', () => {
 /* ══════════════════════════════════════════════════════════
    CHAT VIEW — Open & Render
 ══════════════════════════════════════════════════════════ */
+
+/* ── Resolve agenda_project room (same as app Clarity tab) ──── */
+const RESOLVE_ROOM_MUTATION = \`
+  mutation FindOrCreateAgendaProjectRoom($input: FindOrCreateProjectRoomInput!) {
+    findOrCreateAgendaProjectRoom(input: $input) {
+      roomId
+    }
+  }
+\`;
+
+async function resolveAgendaRoom(projectId) {
+  const data = await gql(RESOLVE_ROOM_MUTATION, { input: { projectId: String(projectId) } });
+  return data.findOrCreateAgendaProjectRoom?.roomId || null;
+}
+
 const MESSAGES_QUERY = `
   query RoomMessages($roomId: ID!) {
     messages(roomId: $roomId) {
@@ -1188,7 +1203,7 @@ const MESSAGES_QUERY = `
   }
 `;
 
-function openChat(item) {
+async function openChat(item) {
   const name      = item.dataset.name;
   const stage     = item.dataset.stage;
   const sc        = item.dataset.statusColor;
@@ -1218,11 +1233,30 @@ function openChat(item) {
   msgContent.innerHTML = '';
   typingEl.style.display = 'none';
 
-  if (roomId) {
+  // Always resolve the agenda_project room (same as app Clarity tab)
+  const projectId = item.dataset.projectId;
+  if (projectId) {
+    showChatLoading();
+    try {
+      const agendaRoomId = await resolveAgendaRoom(projectId);
+      if (agendaRoomId) {
+        activeProject.roomId = agendaRoomId;
+        fetchMessages(agendaRoomId);
+      } else if (roomId) {
+        // Fallback to projectGeneralChatRoom
+        fetchMessages(roomId);
+      } else {
+        showNoRoomState(name, stage, days);
+      }
+    } catch (err) {
+      console.warn('resolveAgendaRoom failed, falling back:', err);
+      if (roomId) { fetchMessages(roomId); }
+      else { showNoRoomState(name, stage, days); }
+    }
+  } else if (roomId) {
     showChatLoading();
     fetchMessages(roomId);
   } else {
-    // No room yet — show empty state
     showNoRoomState(name, stage, days);
   }
 }

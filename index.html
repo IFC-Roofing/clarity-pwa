@@ -1696,9 +1696,17 @@ if (typeof visualViewport !== 'undefined') {
 
 /* ── Service Worker ──────────────────────────────────────── */
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js')
-    .then(r => console.log('SW:', r.scope))
-    .catch(e => console.log('SW err:', e));
+  navigator.serviceWorker.register('/sw.js').then(reg => {
+    // Check for updates every 60 seconds
+    setInterval(() => reg.update(), 60000);
+    // When a new SW is found, activate and reload
+    reg.addEventListener('updatefound', () => {
+      const nw = reg.installing;
+      nw.addEventListener('statechange', () => {
+        if (nw.state === 'activated') window.location.reload();
+      });
+    });
+  }).catch(e => console.log('SW:', e));
 }
 
 /* ── Logout / switch account ─────────────────────────────── */

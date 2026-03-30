@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Clarity</title>
 
+<!-- Google Identity Services -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+
 <!-- PWA Meta -->
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#000000">
@@ -410,39 +413,44 @@ body {
 #view-login.hidden { display: none; }
 
 .login-logo {
-  font-size: 48px; font-weight: 800; letter-spacing: -2px;
-  color: #fff; margin-bottom: 4px; line-height: 1;
+  font-size: 52px; font-weight: 800; letter-spacing: -2px;
+  color: #fff; margin-bottom: 6px; line-height: 1;
+  display: flex; align-items: center; gap: 10px;
 }
-.login-logo span { color: #007AFF; }
-.login-tagline {
-  font-size: 13px; color: #636366; margin-bottom: 36px;
-}
-.login-section-label {
-  font-size: 11px; font-weight: 600; color: #636366;
-  text-transform: uppercase; letter-spacing: 0.6px;
-  align-self: flex-start; margin-bottom: 8px;
-}
-.login-list {
-  width: 100%; background: #1c1c1e; border-radius: 14px;
-  overflow: hidden; margin-bottom: 32px;
-}
-.login-user-row {
-  display: flex; align-items: center; gap: 12px;
-  padding: 13px 16px; cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition: background 0.1s;
-}
-.login-user-row + .login-user-row { border-top: 1px solid rgba(255,255,255,0.05); }
-.login-user-row:active { background: #2c2c2e; }
-.login-user-avatar {
-  width: 38px; height: 38px; border-radius: 50%;
+.login-logo-mark {
+  width: 52px; height: 52px; border-radius: 14px;
+  background: linear-gradient(135deg, #00305C, #0054A0);
   display: flex; align-items: center; justify-content: center;
-  font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0;
+  font-size: 28px; color: #fff;
 }
-.login-user-info { flex: 1; min-width: 0; }
-.login-user-name { font-size: 15px; font-weight: 600; }
-.login-user-email { font-size: 12px; color: #636366; }
-.login-chevron { color: #3c3c3e; font-size: 16px; }
+.login-tagline {
+  font-size: 13px; color: #636366; margin-bottom: 48px; text-align: center;
+}
+
+/* Google Sign-In button wrapper */
+.google-signin-wrap {
+  display: flex; flex-direction: column; align-items: center; gap: 16px; width: 100%;
+}
+.google-btn {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; max-width: 320px;
+  background: #fff; color: #1a1a1a;
+  border: none; border-radius: 12px;
+  padding: 14px 20px;
+  font-size: 15px; font-weight: 600; font-family: inherit;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.15s, transform 0.1s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+}
+.google-btn:active { opacity: 0.85; transform: scale(0.97); }
+.google-btn.loading { opacity: 0.6; pointer-events: none; }
+.google-btn svg { flex-shrink: 0; }
+
+.login-error {
+  font-size: 13px; color: #FF3B30; text-align: center;
+  max-width: 280px; display: none;
+}
+.login-error.visible { display: block; }
 
 .login-loading {
   display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 48px 0;
@@ -582,14 +590,32 @@ body {
 <!--  VIEW: Login                                           -->
 <!-- ════════════════════════════════════════════════════════ -->
 <div id="view-login" class="view">
-  <div class="login-logo">✦ Clarity</div>
+  <div class="login-logo">
+    <div class="login-logo-mark">✦</div>
+    Clarity
+  </div>
   <div class="login-tagline">Your AI roofing intelligence layer</div>
-  <div class="login-section-label">Who are you?</div>
-  <div class="login-list" id="login-list">
-    <div class="login-loading">
-      <div class="loading-spinner"></div>
-      <div class="loading-text">Loading reps…</div>
-    </div>
+
+  <div class="google-signin-wrap">
+    <button class="google-btn" id="google-btn">
+      <!-- Google "G" logo -->
+      <svg width="20" height="20" viewBox="0 0 48 48">
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+      </svg>
+      Sign in with Google
+    </button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+
+  <!-- Hidden GIS div (fallback / programmatic trigger) -->
+  <div id="g_id_onload"
+       data-client_id="855240747767-vjh41atucabiji7vhltfbbh48731idj7.apps.googleusercontent.com"
+       data-callback="handleGoogleCredential"
+       data-auto_prompt="false"
+       style="display:none">
   </div>
 </div>
 
@@ -807,7 +833,7 @@ const GQL = '/api/graphql';
 
 /* ── Auth state ──────────────────────────────────────────── */
 const AUTH_KEY = 'clarity_user';
-let currentUser = null;  // { id, name, email }
+let currentUser = null;  // { id, name, email, token }
 
 function loadStoredUser() {
   try {
@@ -822,10 +848,39 @@ function saveUser(user) {
 function clearUser() {
   currentUser = null;
   localStorage.removeItem(AUTH_KEY);
+  // Sign out of GIS so they get the account picker again
+  if (typeof google !== 'undefined' && google.accounts) {
+    google.accounts.id.disableAutoSelect();
+  }
 }
 
 /* ── GraphQL fetch helper ────────────────────────────────── */
+// Uses /api/user-graphql with Bearer token when logged in via SSO,
+// falls back to /api/graphql with X-User-Id for unauthenticated reads.
 async function gql(query, variables = {}, userId = null) {
+  // If we have a real Bearer token, use the user-graphql proxy
+  if (currentUser?.token) {
+    const res = await fetch(USER_GQL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${currentUser.token}`,
+      },
+      body: JSON.stringify({ query, variables }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    // Token expired — kick to login
+    if (json.errors?.some(e => e.message?.toLowerCase().includes('authenticated') || e.message?.toLowerCase().includes('unauthorized'))) {
+      clearUser();
+      showLoginView();
+      throw new Error('Session expired. Please sign in again.');
+    }
+    if (json.errors?.length) throw new Error(json.errors[0].message);
+    return json.data;
+  }
+
+  // Unauthenticated read (sign-in mutation, user list, etc.)
   const headers = { 'Content-Type': 'application/json' };
   const uid = userId || currentUser?.id;
   if (uid) headers['X-User-Id'] = String(uid);
@@ -1453,78 +1508,141 @@ if ('serviceWorker' in navigator) {
     .catch(e => console.log('SW err:', e));
 }
 
-/* ── Logout / switch rep ─────────────────────────────────── */
+/* ── Logout / switch account ─────────────────────────────── */
 document.getElementById('logout-btn').addEventListener('click', () => {
   clearUser();
   allProjects = [];
+  pipelineProjects = [];
+  pipelineLoaded = false;
   showLoginView();
 });
 
 /* ══════════════════════════════════════════════════════════
-   LOGIN VIEW (IFC-667)
+   LOGIN VIEW — Google SSO (IFC-678)
 ══════════════════════════════════════════════════════════ */
-const viewLogin = document.getElementById('view-login');
-const loginList = document.getElementById('login-list');
+const GOOGLE_CLIENT_ID = '855240747767-vjh41atucabiji7vhltfbbh48731idj7.apps.googleusercontent.com';
+const USER_GQL    = '/api/user-graphql';
 
-const USERS_QUERY = `
-  query RepList {
-    users {
-      id
-      name
-      email
-      isSales
-      isAdmin
+const viewLogin   = document.getElementById('view-login');
+const googleBtn   = document.getElementById('google-btn');
+const loginError  = document.getElementById('login-error');
+
+const SIGN_IN_MUTATION = `
+  mutation GoogleSignIn($input: SignInUserInput!) {
+    signIn(input: $input) {
+      token
+      user { id name email }
     }
   }
 `;
 
-async function showLoginView() {
-  // Hide all other views
+/* ── GIS credential callback ─────────────────────────────── */
+window.handleGoogleCredential = async function(response) {
+  setLoginLoading(true);
+  hideLoginError();
+  try {
+    const res = await fetch('/api/graphql', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        query: SIGN_IN_MUTATION,
+        variables: { input: { googleToken: response.credential } }
+      })
+    });
+    const json = await res.json();
+    if (json.errors?.length) throw new Error(json.errors[0].message);
+    const { token, user } = json.data.signIn;
+    if (!token || !user) throw new Error('Sign-in failed — no token returned');
+    saveUser({ ...user, token });
+    enterApp();
+  } catch (err) {
+    console.error('Google SSO:', err);
+    showLoginError(err.message.includes('not found') || err.message.includes('not authorized')
+      ? 'Your Google account isn\'t linked to an IFC rep. Ask Oli to add you.'
+      : 'Sign-in failed. Try again.');
+    setLoginLoading(false);
+  }
+};
+
+/* ── Trigger GIS account picker ─────────────────────────── */
+googleBtn.addEventListener('click', () => {
+  hideLoginError();
+  if (typeof google === 'undefined' || !google.accounts) {
+    showLoginError('Google Sign-In not loaded yet. Check your connection.');
+    return;
+  }
+  google.accounts.id.prompt();
+});
+
+function setLoginLoading(on) {
+  googleBtn.classList.toggle('loading', on);
+  googleBtn.textContent = on ? 'Signing in…' : '';
+  if (!on) {
+    googleBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 48 48">
+      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+      <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+    </svg>Sign in with Google`;
+  }
+}
+function showLoginError(msg) {
+  loginError.textContent = msg;
+  loginError.classList.add('visible');
+}
+function hideLoginError() {
+  loginError.classList.remove('visible');
+}
+
+/* ── Init GIS when script loads ──────────────────────────── */
+function initGoogleSignIn() {
+  if (typeof google === 'undefined' || !google.accounts) return;
+  google.accounts.id.initialize({
+    client_id: GOOGLE_CLIENT_ID,
+    callback: window.handleGoogleCredential,
+    auto_select: false,
+    cancel_on_tap_outside: true,
+  });
+}
+
+// Call once GIS is ready (script is async)
+if (typeof google !== 'undefined' && google.accounts) {
+  initGoogleSignIn();
+} else {
+  window.addEventListener('load', initGoogleSignIn);
+}
+
+/* ── Authenticated GQL (uses user's own Bearer token) ────── */
+async function userGql(query, variables = {}) {
+  if (!currentUser?.token) throw new Error('Not authenticated');
+  const res = await fetch(USER_GQL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${currentUser.token}`,
+    },
+    body: JSON.stringify({ query, variables }),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const json = await res.json();
+  if (json.errors?.length) throw new Error(json.errors[0].message);
+  return json.data;
+}
+
+/* ── Show / hide login view ──────────────────────────────── */
+function showLoginView() {
   viewList.style.display = 'none';
   viewPipeline.classList.remove('pipeline-active');
   viewLogin.classList.remove('hidden');
-
-  loginList.innerHTML = `
-    <div class="login-loading">
-      <div class="loading-spinner"></div>
-      <div class="loading-text">Loading reps…</div>
-    </div>`;
-
-  try {
-    const data = await gql(USERS_QUERY, {}, null);  // bypass token (no userId)
-    const users = (data.users || [])
-      .filter(u => u.isSales || u.isAdmin)
-      .sort((a, b) => a.name.localeCompare(b.name));
-
-    loginList.innerHTML = '';
-    users.forEach(u => {
-      const row = document.createElement('div');
-      row.className = 'login-user-row';
-      const bg   = avatarColor(u.name);
-      const init = initials(u.name);
-      row.innerHTML = `
-        <div class="login-user-avatar" style="background:${bg}">${init}</div>
-        <div class="login-user-info">
-          <div class="login-user-name">${escHtml(u.name)}</div>
-          <div class="login-user-email">${escHtml(u.email)}</div>
-        </div>
-        <div class="login-chevron">›</div>`;
-      row.addEventListener('click', () => loginAs(u));
-      loginList.appendChild(row);
-    });
-  } catch (err) {
-    loginList.innerHTML = `
-      <div style="padding:20px;text-align:center;color:#636366;font-size:14px;">
-        Failed to load users.<br><small>${err.message}</small>
-      </div>`;
-  }
+  hideLoginError();
+  setLoginLoading(false);
+  // Init GIS in case script loaded after initial call
+  initGoogleSignIn();
 }
 
-function loginAs(user) {
-  saveUser(user);
+function enterApp() {
   viewLogin.classList.add('hidden');
   viewList.style.display = '';
-  // Reset and load this rep's projects
   allProjects = [];
   pipelineProjects = [];
   pipelineLoaded = false;
@@ -1533,8 +1651,7 @@ function loginAs(user) {
 
 /* ── Bootstrap ───────────────────────────────────────────── */
 loadStoredUser();
-if (currentUser) {
-  // Already logged in — go straight to messages
+if (currentUser?.token) {
   viewLogin.classList.add('hidden');
   loadProjects();
 } else {

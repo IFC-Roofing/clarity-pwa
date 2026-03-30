@@ -1177,13 +1177,13 @@ refreshBtn.addEventListener('click', () => {
 ══════════════════════════════════════════════════════════ */
 
 /* ── Resolve agenda_project room (same as app Clarity tab) ──── */
-const RESOLVE_ROOM_MUTATION = \`
+const RESOLVE_ROOM_MUTATION = `
   mutation FindOrCreateAgendaProjectRoom($input: FindOrCreateProjectRoomInput!) {
     findOrCreateAgendaProjectRoom(input: $input) {
       roomId
     }
   }
-\`;
+`;
 
 async function resolveAgendaRoom(projectId) {
   const data = await gql(RESOLVE_ROOM_MUTATION, { input: { projectId: String(projectId) } });

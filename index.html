@@ -395,6 +395,132 @@ body {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
 }
+
+/* ══════════════════════════════════════════════════════════ */
+/*  PIPELINE VIEW                                             */
+/* ══════════════════════════════════════════════════════════ */
+#view-pipeline {
+  transform: translateX(0); z-index: 0;
+  display: none;
+}
+#view-pipeline.pipeline-active {
+  display: flex;
+}
+
+.pipeline-header {
+  flex-shrink: 0;
+  padding: 4px 20px 12px;
+}
+.pipeline-title { font-size: 32px; font-weight: 700; letter-spacing: -0.5px; }
+
+.pipeline-scrollable {
+  flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  padding: 0 0 16px;
+}
+.pipeline-scrollable::-webkit-scrollbar { display: none; }
+
+/* KPI row */
+.kpi-row {
+  display: flex; gap: 10px; padding: 0 16px 20px;
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+}
+.kpi-row::-webkit-scrollbar { display: none; }
+.kpi-card {
+  flex-shrink: 0; background: #1c1c1e; border-radius: 14px;
+  padding: 14px 16px; min-width: 110px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.kpi-value { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; line-height: 1; }
+.kpi-label { font-size: 11px; color: #8e8e93; font-weight: 500; }
+.kpi-sub   { font-size: 10px; color: #636366; }
+.kpi-card.green .kpi-value { color: #34C759; }
+.kpi-card.amber .kpi-value { color: #FF9500; }
+.kpi-card.blue  .kpi-value { color: #007AFF; }
+
+/* Section header */
+.pipeline-section-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 4px 20px 8px;
+}
+.pipeline-section-title { font-size: 13px; font-weight: 600; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.5px; }
+.pipeline-total { font-size: 13px; color: #636366; }
+
+/* Stage bucket row */
+.stage-bucket {
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.stage-bucket:active .bucket-row { background: #111; }
+
+.bucket-row {
+  display: flex; align-items: center; padding: 14px 20px; gap: 12px;
+  transition: background 0.1s;
+}
+.bucket-bar-wrap {
+  flex: 1; height: 4px; background: #1c1c1e; border-radius: 2px; overflow: hidden;
+}
+.bucket-bar {
+  height: 100%; border-radius: 2px;
+  transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.bucket-bar.green { background: #34C759; }
+.bucket-bar.amber { background: #FF9500; }
+.bucket-bar.red   { background: #FF3B30; }
+.bucket-bar.gray  { background: #636366; }
+
+.bucket-left { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+.bucket-name { font-size: 16px; font-weight: 600; }
+.bucket-meta { display: flex; align-items: center; gap: 8px; }
+
+.bucket-count {
+  font-size: 22px; font-weight: 700; flex-shrink: 0; min-width: 36px; text-align: right;
+}
+.bucket-count.green { color: #34C759; }
+.bucket-count.amber { color: #FF9500; }
+.bucket-count.blue  { color: #007AFF; }
+.bucket-count.red   { color: #FF3B30; }
+.bucket-count.gray  { color: #636366; }
+
+.bucket-chevron {
+  font-size: 13px; color: #3c3c3e; flex-shrink: 0;
+  transition: transform 0.25s; display: inline-block;
+}
+.stage-bucket.open .bucket-chevron { transform: rotate(90deg); }
+
+/* Expanded project list inside bucket */
+.bucket-projects {
+  display: none;
+  background: #0a0a0a;
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+.stage-bucket.open .bucket-projects { display: block; }
+
+.bucket-project-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 20px 10px 48px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition: background 0.1s;
+}
+.bucket-project-item:last-child { border-bottom: none; }
+.bucket-project-item:active { background: #141414; }
+
+.bp-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.bp-info { flex: 1; min-width: 0; }
+.bp-name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bp-meta { font-size: 12px; color: #636366; }
+.bp-days { font-size: 12px; color: #636366; flex-shrink: 0; }
+
+.bucket-show-more {
+  padding: 10px 20px 10px 48px;
+  font-size: 13px; color: #007AFF; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.bucket-show-more:active { opacity: 0.6; }
 </style>
 </head>
 <body>
@@ -487,9 +613,9 @@ body {
 
   <!-- Bottom nav -->
   <div class="bottom-nav">
-    <div class="nav-item active"><span class="nav-icon">💬</span><span>Messages</span></div>
-    <div class="nav-item"><span class="nav-icon">📊</span><span>Pipeline</span></div>
-    <div class="nav-item"><span class="nav-icon">🔗</span><span>IFC App</span></div>
+    <div class="nav-item active" id="list-nav-messages"><span class="nav-icon">💬</span><span>Messages</span></div>
+    <div class="nav-item" id="list-nav-pipeline"><span class="nav-icon">📊</span><span>Pipeline</span></div>
+    <div class="nav-item" id="list-nav-app"><span class="nav-icon">🔗</span><span>IFC App</span></div>
   </div>
 
 </div><!-- #view-list -->
@@ -561,6 +687,39 @@ body {
   </div>
 
 </div><!-- #view-chat -->
+
+
+<!-- ════════════════════════════════════════════════════════ -->
+<!--  VIEW: Pipeline                                        -->
+<!-- ════════════════════════════════════════════════════════ -->
+<div id="view-pipeline" class="view">
+
+  <div class="list-header">
+    <div class="status-bar">
+      <span id="pipeline-status-time">9:41</span>
+      <span style="font-size:11px;color:#8e8e93">clarity.ifcroofing.com</span>
+      <span>📶 🔋</span>
+    </div>
+    <div class="pipeline-header">
+      <div class="pipeline-title">Pipeline</div>
+    </div>
+  </div>
+
+  <div class="pipeline-scrollable" id="pipeline-scrollable">
+    <div class="loading-state" id="pipeline-loading">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Loading pipeline…</div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-item" id="pipeline-nav-messages"><span class="nav-icon">💬</span><span>Messages</span></div>
+    <div class="nav-item active" id="pipeline-nav-pipeline"><span class="nav-icon">📊</span><span>Pipeline</span></div>
+    <div class="nav-item" id="pipeline-nav-app"><span class="nav-icon">🔗</span><span>IFC App</span></div>
+  </div>
+
+</div><!-- #view-pipeline -->
+
 
 </div><!-- #app -->
 
@@ -1120,6 +1279,358 @@ if ('serviceWorker' in navigator) {
 
 /* ── Bootstrap ───────────────────────────────────────────── */
 loadProjects();
+
+/* ══════════════════════════════════════════════════════════
+   PIPELINE VIEW (IFC-656)
+══════════════════════════════════════════════════════════ */
+
+/* Pipeline stage buckets — ordered, canonical */
+const PIPELINE_BUCKETS = [
+  {
+    label: 'Leads',
+    color: 'amber',
+    stages: ['LEADS','LEAD','Lead','CONTACTED','PRE-CALL','🔥🔥LEADS - NEEDS INSPECTION','Prospect'],
+  },
+  {
+    label: 'Inspected',
+    color: 'amber',
+    stages: ['INSPECTED','🔥 Inspection Done','SCHEDULE REINSPECT'],
+  },
+  {
+    label: 'Enough Damage',
+    color: 'green',
+    stages: ['ENOUGH DAMAGE','🔥🔥 Waiting for Storm Date / Enough Damage'],
+  },
+  {
+    label: 'Adj / Post Mtg',
+    color: 'amber',
+    stages: ['ADJ SCHEDULED','POST ADJ. MEETING','INS. RESPONDED','❌ ADJ MTG done - NOT APPROVED'],
+  },
+  {
+    label: 'Signed',
+    color: 'green',
+    stages: ['SIGNED','✅ Signed Contract'],
+  },
+  {
+    label: 'Active',
+    color: 'amber',
+    stages: ['REP HANDS','OFFICE HANDS',"VANESSA'S HANDS","WILL'S HANDS","STETSON'S HANDS",'SUPP SENT','SUPP COMPLETED','✅ Finalize Scope 4 Install'],
+  },
+  {
+    label: 'Billed',
+    color: 'green',
+    stages: ['BILLED','BILLED HOME','BILLED-BACKEND','💰 Paid (needs cap out)','💰💰 BILLING (👍 final RCV)','💰⏰ Billed Homeowner','💰 Submitted. Waiting on FIN RCV'],
+  },
+  {
+    label: 'Capped',
+    color: 'blue',
+    stages: ['CAPPED','NEW ROOF','Membership Program','Before Bought'],
+  },
+  {
+    label: 'PA / Legal',
+    color: 'red',
+    stages: ['PA-LAW','PA-LAW-APPRAISAL-EXPERT','PA-LAW-APPRAISAL','❌ Appraisal / PA /Attorney'],
+  },
+  {
+    label: 'Lost / Closed',
+    color: 'gray',
+    stages: ['LOST','Lost','NOT ENOUGH DAMAGE','Dead','CSV Migrated','Past Clients','Completed Repairs (non Warranty)','Completed Repairs (IFC Warranty)','8. 👍 COMPLETE / CLOSED','Closed','Closed Out - COMPLETE','PAID / CLOSED','Completed','After Bought'],
+  },
+];
+
+/* Build a lookup map: raw stage string → bucket index */
+const STAGE_TO_BUCKET = new Map();
+PIPELINE_BUCKETS.forEach((b, i) => {
+  b.stages.forEach(s => STAGE_TO_BUCKET.set(s, i));
+});
+
+/* State */
+let pipelineProjects  = [];   // all projects (paginated)
+let pipelineLoaded    = false;
+let pipelineLoading   = false;
+let openBuckets       = new Set();  // which buckets are expanded
+
+const viewPipeline = document.getElementById('view-pipeline');
+const pipelineScrollable = document.getElementById('pipeline-scrollable');
+
+/* ── Nav switching ───────────────────────────────────────── */
+function showTab(tab) {
+  // tab = 'messages' | 'pipeline'
+  if (tab === 'messages') {
+    viewList.style.display = '';
+    viewPipeline.classList.remove('pipeline-active');
+    // restore list nav active state
+    document.querySelectorAll('#list-nav-messages, #list-nav-pipeline, #list-nav-app').forEach(el => el.classList.remove('active'));
+    document.getElementById('list-nav-messages').classList.add('active');
+  } else if (tab === 'pipeline') {
+    viewList.style.display = 'none';
+    viewPipeline.classList.add('pipeline-active');
+    document.querySelectorAll('#pipeline-nav-messages, #pipeline-nav-pipeline, #pipeline-nav-app').forEach(el => el.classList.remove('active'));
+    document.getElementById('pipeline-nav-pipeline').classList.add('active');
+    if (!pipelineLoaded && !pipelineLoading) {
+      loadPipelineProjects();
+    }
+  }
+}
+
+document.getElementById('list-nav-pipeline').addEventListener('click', () => showTab('pipeline'));
+document.getElementById('pipeline-nav-messages').addEventListener('click', () => showTab('messages'));
+
+/* ── Load ALL projects (paginated) ───────────────────────── */
+const PIPELINE_LIST_QUERY = `
+  query PipelineProjects($page: ID) {
+    projects(perPage: "500", page: $page) {
+      projects {
+        id name recordStatus daysInStatus updatedAt
+        user { id name }
+        contact { id name }
+        projectGeneralChatRoom { id lastMessage { content createdAt role user { name } } }
+      }
+      totalPages
+    }
+  }
+`;
+
+async function loadPipelineProjects() {
+  if (pipelineLoading) return;
+  pipelineLoading = true;
+  pipelineScrollable.innerHTML = `
+    <div class="loading-state">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Loading pipeline…</div>
+    </div>`;
+
+  try {
+    // If we already loaded projects in the Messages tab, reuse them
+    if (allProjects.length > 0 && allProjects.length >= 500) {
+      // Paginate to get the rest
+      pipelineProjects = [...allProjects];
+    }
+
+    // Always paginate fully for pipeline accuracy
+    const all = [];
+    let page = 1;
+    let totalPages = 1;
+    do {
+      const data = await gql(PIPELINE_LIST_QUERY, { page: String(page) });
+      all.push(...(data.projects.projects || []));
+      totalPages = parseInt(data.projects.totalPages, 10);
+      page++;
+    } while (page <= totalPages && page <= 20);
+
+    pipelineProjects = all;
+    pipelineLoaded  = true;
+    pipelineLoading = false;
+    renderPipeline();
+  } catch (err) {
+    pipelineLoading = false;
+    pipelineScrollable.innerHTML = `
+      <div class="error-state">
+        <div class="error-icon">⚠️</div>
+        <div class="error-text">Couldn't load pipeline.<br><small style="color:#444">${err.message}</small></div>
+        <button class="retry-btn" id="pipeline-retry-btn">Try Again</button>
+      </div>`;
+    document.getElementById('pipeline-retry-btn')?.addEventListener('click', loadPipelineProjects);
+  }
+}
+
+/* ── Build pipeline data from projects ───────────────────── */
+function buildPipelineData(projects) {
+  const buckets = PIPELINE_BUCKETS.map(b => ({ ...b, projects: [] }));
+  const unknown = [];
+
+  projects.forEach(p => {
+    const stage = p.recordStatus || 'Unknown';
+    const idx   = STAGE_TO_BUCKET.get(stage);
+    if (idx !== undefined) {
+      buckets[idx].projects.push(p);
+    } else if (stage !== 'Unknown') {
+      unknown.push(p);
+    }
+  });
+
+  return buckets;
+}
+
+/* ── Render Pipeline ─────────────────────────────────────── */
+function renderPipeline() {
+  const buckets = buildPipelineData(pipelineProjects);
+  const total   = pipelineProjects.filter(p => p.recordStatus && p.recordType !== null).length;
+
+  // KPI cards — active pipeline only (exclude lost/closed/unknown)
+  const active = buckets.filter(b => b.label !== 'Lost / Closed').reduce((n, b) => n + b.projects.length, 0);
+  const inspected  = buckets.find(b => b.label === 'Inspected')?.projects.length   || 0;
+  const enoughDmg  = buckets.find(b => b.label === 'Enough Damage')?.projects.length || 0;
+  const billed     = buckets.find(b => b.label === 'Billed')?.projects.length      || 0;
+  const capped     = buckets.find(b => b.label === 'Capped')?.projects.length       || 0;
+  const paLegal    = buckets.find(b => b.label === 'PA / Legal')?.projects.length   || 0;
+
+  // Max count (for bar scaling) — among active buckets
+  const activeBuckets = buckets.filter(b => b.label !== 'Lost / Closed');
+  const maxCount = Math.max(...activeBuckets.map(b => b.projects.length), 1);
+
+  const html = [];
+
+  // KPI row
+  html.push(`<div class="kpi-row">`);
+  html.push(kpiCard('Active', active.toLocaleString(), 'projects', 'blue'));
+  html.push(kpiCard('Inspected', inspected, 'awaiting adj', 'amber'));
+  html.push(kpiCard('Enough Dmg', enoughDmg, 'ready to file', 'green'));
+  html.push(kpiCard('Billed', billed, 'collecting', 'green'));
+  html.push(kpiCard('Capped', capped, 'complete', 'blue'));
+  if (paLegal > 0) html.push(kpiCard('PA / Legal', paLegal, 'escalated', 'red'));
+  html.push(`</div>`);
+
+  // Divider
+  html.push(`
+    <div class="pipeline-section-header">
+      <div class="pipeline-section-title">All Stages</div>
+      <div class="pipeline-total">${pipelineProjects.length.toLocaleString()} projects</div>
+    </div>`);
+
+  // Bucket rows
+  buckets.forEach((bucket, i) => {
+    const count    = bucket.projects.length;
+    if (count === 0) return;
+    const barPct   = bucket.label === 'Lost / Closed'
+      ? 100
+      : Math.round((count / maxCount) * 100);
+    const isOpen   = openBuckets.has(i);
+    const colorClass = bucket.color;
+
+    html.push(`<div class="stage-bucket${isOpen ? ' open' : ''}" data-bucket-idx="${i}">`);
+    html.push(`
+      <div class="bucket-row">
+        <div class="bucket-left">
+          <div class="bucket-name">${escHtml(bucket.label)}</div>
+          <div class="bucket-bar-wrap">
+            <div class="bucket-bar ${colorClass}" style="width:${barPct}%"></div>
+          </div>
+        </div>
+        <div class="bucket-count ${colorClass}">${count}</div>
+        <div class="bucket-chevron">›</div>
+      </div>`);
+
+    // Project list (top 20, expand to see all)
+    html.push(`<div class="bucket-projects">`);
+    const sorted  = [...bucket.projects].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+    const preview = sorted.slice(0, 20);
+    const more    = sorted.length - 20;
+
+    preview.forEach(p => {
+      const nm   = (p.name || 'Unknown').trim();
+      const bg   = avatarColor(nm);
+      const init = initials(nm);
+      const rep  = p.user?.name ? `${escHtml(p.user.name)} · ` : '';
+      const days = p.daysInStatus || '0';
+      html.push(`
+        <div class="bucket-project-item" data-project-id="${escHtml(p.id)}" data-room-id="${escHtml(p.projectGeneralChatRoom?.id || '')}" data-name="${escHtml(nm)}" data-stage="${escHtml(p.recordStatus || '')}" data-days="${escHtml(days)}" data-rep="${escHtml(p.user?.name || '')}">
+          <div class="bp-avatar" style="background:${bg}">${init}</div>
+          <div class="bp-info">
+            <div class="bp-name">${escHtml(nm)}</div>
+            <div class="bp-meta">${rep}${escHtml(p.recordStatus || '—')}</div>
+          </div>
+          <div class="bp-days">${days}d</div>
+        </div>`);
+    });
+
+    if (more > 0) {
+      html.push(`<div class="bucket-show-more" data-bucket-idx="${i}" data-show-all="false">+ ${more} more</div>`);
+    }
+
+    html.push(`</div>`); // .bucket-projects
+    html.push(`</div>`); // .stage-bucket
+  });
+
+  pipelineScrollable.innerHTML = html.join('');
+
+  // Wire up bucket expand/collapse
+  pipelineScrollable.querySelectorAll('.stage-bucket').forEach(el => {
+    el.querySelector('.bucket-row').addEventListener('click', () => {
+      const idx = parseInt(el.dataset.bucketIdx, 10);
+      if (openBuckets.has(idx)) {
+        openBuckets.delete(idx);
+        el.classList.remove('open');
+      } else {
+        openBuckets.add(idx);
+        el.classList.add('open');
+      }
+    });
+  });
+
+  // Wire up "show more"
+  pipelineScrollable.querySelectorAll('.bucket-show-more').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const idx    = parseInt(btn.dataset.bucketIdx, 10);
+      const bucket = buildPipelineData(pipelineProjects)[idx];
+      const sorted = [...bucket.projects].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+      const container = btn.parentElement;
+      btn.remove();
+      sorted.slice(20).forEach(p => {
+        const nm   = (p.name || 'Unknown').trim();
+        const bg   = avatarColor(nm);
+        const init = initials(nm);
+        const rep  = p.user?.name ? `${escHtml(p.user.name)} · ` : '';
+        const days = p.daysInStatus || '0';
+        const item = document.createElement('div');
+        item.className = 'bucket-project-item';
+        item.dataset.projectId = p.id;
+        item.dataset.roomId    = p.projectGeneralChatRoom?.id || '';
+        item.dataset.name      = nm;
+        item.dataset.stage     = p.recordStatus || '';
+        item.dataset.days      = days;
+        item.dataset.rep       = p.user?.name || '';
+        item.innerHTML = `
+          <div class="bp-avatar" style="background:${bg}">${init}</div>
+          <div class="bp-info">
+            <div class="bp-name">${escHtml(nm)}</div>
+            <div class="bp-meta">${rep}${escHtml(p.recordStatus || '—')}</div>
+          </div>
+          <div class="bp-days">${days}d</div>`;
+        container.appendChild(item);
+        item.addEventListener('click', () => openProjectFromPipeline(item));
+      });
+    });
+  });
+
+  // Wire up project taps → open chat
+  pipelineScrollable.querySelectorAll('.bucket-project-item').forEach(item => {
+    item.addEventListener('click', () => openProjectFromPipeline(item));
+  });
+}
+
+function kpiCard(label, value, sub, color) {
+  return `<div class="kpi-card ${color}">
+    <div class="kpi-value">${value}</div>
+    <div class="kpi-label">${label}</div>
+    <div class="kpi-sub">${sub}</div>
+  </div>`;
+}
+
+/* ── Open project from Pipeline → jump to chat ───────────── */
+function openProjectFromPipeline(item) {
+  const name    = item.dataset.name;
+  const stage   = item.dataset.stage;
+  const roomId  = item.dataset.roomId;
+  const days    = item.dataset.days;
+  const rep     = item.dataset.rep;
+  const sc      = stageColor(stage);
+
+  // Switch to messages tab first (so back chevron shows Clarity)
+  showTab('messages');
+
+  // Then open chat — synthesise a fake dataset element
+  const fake = { dataset: {
+    projectId: item.dataset.projectId,
+    name, stage,
+    statusColor: sc,
+    roomId: roomId || '',
+    daysInStatus: days,
+    repName: rep,
+  }};
+  openChat(fake);
+}
 </script>
 </body>
 </html>

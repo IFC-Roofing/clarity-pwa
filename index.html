@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Clarity — Messages</title>
+<title>Clarity</title>
 
 <!-- PWA Meta -->
 <link rel="manifest" href="/manifest.json">
@@ -397,6 +397,58 @@ body {
 }
 
 /* ══════════════════════════════════════════════════════════ */
+/*  LOGIN VIEW                                                */
+/* ══════════════════════════════════════════════════════════ */
+#view-login {
+  z-index: 10;
+  justify-content: center;
+  align-items: center;
+  background: #000;
+  padding: 32px 24px;
+  gap: 0;
+}
+#view-login.hidden { display: none; }
+
+.login-logo {
+  font-size: 48px; font-weight: 800; letter-spacing: -2px;
+  color: #fff; margin-bottom: 4px; line-height: 1;
+}
+.login-logo span { color: #007AFF; }
+.login-tagline {
+  font-size: 13px; color: #636366; margin-bottom: 36px;
+}
+.login-section-label {
+  font-size: 11px; font-weight: 600; color: #636366;
+  text-transform: uppercase; letter-spacing: 0.6px;
+  align-self: flex-start; margin-bottom: 8px;
+}
+.login-list {
+  width: 100%; background: #1c1c1e; border-radius: 14px;
+  overflow: hidden; margin-bottom: 32px;
+}
+.login-user-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 16px; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.1s;
+}
+.login-user-row + .login-user-row { border-top: 1px solid rgba(255,255,255,0.05); }
+.login-user-row:active { background: #2c2c2e; }
+.login-user-avatar {
+  width: 38px; height: 38px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.login-user-info { flex: 1; min-width: 0; }
+.login-user-name { font-size: 15px; font-weight: 600; }
+.login-user-email { font-size: 12px; color: #636366; }
+.login-chevron { color: #3c3c3e; font-size: 16px; }
+
+.login-loading {
+  display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 48px 0;
+}
+
+/* ══════════════════════════════════════════════════════════ */
 /*  PIPELINE VIEW                                             */
 /* ══════════════════════════════════════════════════════════ */
 #view-pipeline {
@@ -527,6 +579,22 @@ body {
 <div id="app">
 
 <!-- ════════════════════════════════════════════════════════ -->
+<!--  VIEW: Login                                           -->
+<!-- ════════════════════════════════════════════════════════ -->
+<div id="view-login" class="view">
+  <div class="login-logo">✦ Clarity</div>
+  <div class="login-tagline">Your AI roofing intelligence layer</div>
+  <div class="login-section-label">Who are you?</div>
+  <div class="login-list" id="login-list">
+    <div class="login-loading">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Loading reps…</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════ -->
 <!--  VIEW: Conversation List                               -->
 <!-- ════════════════════════════════════════════════════════ -->
 <div id="view-list" class="view">
@@ -538,11 +606,14 @@ body {
       <span>📶 🔋</span>
     </div>
     <div class="header">
-      <div class="header-title">Clarity</div>
+      <div>
+        <div class="header-title">Clarity</div>
+        <div id="list-header-sub" style="font-size:13px;color:#636366;margin-top:-2px;padding-left:2px;"></div>
+      </div>
       <div class="header-actions">
         <div class="refresh-dot" id="refresh-dot" title="Live data"></div>
         <button class="header-btn" id="refresh-btn" title="Refresh">↻</button>
-        <button class="header-btn">✏️</button>
+        <button class="header-btn" id="logout-btn" title="Switch rep" style="font-size:13px;">⇄</button>
       </div>
     </div>
     <div class="search-bar">
@@ -725,17 +796,42 @@ body {
 
 <script>
 /* ═══════════════════════════════════════════════════════════
-   Clarity PWA — Phase 2: Live IFC API Integration (IFC-655)
-   GraphQL via /api/graphql proxy (auth server-side, no CORS)
+   Clarity PWA — Phase 4: Full 2-way Clarity Connection (IFC-667)
+   • Login: pick-a-rep screen, stored in localStorage
+   • Send: createMessage mutation with X-User-Id header
+   • Poll: wait for Clarity AI reply (detect final HTML response)
+   • Scope: projects(mine: true) per logged-in rep
 ═══════════════════════════════════════════════════════════ */
 
 const GQL = '/api/graphql';
 
+/* ── Auth state ──────────────────────────────────────────── */
+const AUTH_KEY = 'clarity_user';
+let currentUser = null;  // { id, name, email }
+
+function loadStoredUser() {
+  try {
+    const stored = localStorage.getItem(AUTH_KEY);
+    if (stored) currentUser = JSON.parse(stored);
+  } catch (e) { currentUser = null; }
+}
+function saveUser(user) {
+  currentUser = user;
+  localStorage.setItem(AUTH_KEY, JSON.stringify(user));
+}
+function clearUser() {
+  currentUser = null;
+  localStorage.removeItem(AUTH_KEY);
+}
+
 /* ── GraphQL fetch helper ────────────────────────────────── */
-async function gql(query, variables = {}) {
+async function gql(query, variables = {}, userId = null) {
+  const headers = { 'Content-Type': 'application/json' };
+  const uid = userId || currentUser?.id;
+  if (uid) headers['X-User-Id'] = String(uid);
   const res = await fetch(GQL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify({ query, variables }),
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -850,8 +946,8 @@ const refreshDot  = document.getElementById('refresh-dot');
    LIST VIEW — Load & Render
 ══════════════════════════════════════════════════════════ */
 const LIST_QUERY = `
-  query ProjectList {
-    projects {
+  query ProjectList($mine: Boolean) {
+    projects(mine: $mine) {
       projects {
         id
         name
@@ -877,8 +973,11 @@ const LIST_QUERY = `
 
 async function loadProjects() {
   setListLoading();
+  // Update header subtitle to show who's logged in
+  updateListHeader();
   try {
-    const data = await gql(LIST_QUERY);
+    const mine = currentUser != null;
+    const data = await gql(LIST_QUERY, { mine });
     allProjects = data.projects.projects || [];
     renderList(allProjects);
     refreshDot.style.background = '#34C759'; // green = fresh
@@ -886,6 +985,13 @@ async function loadProjects() {
     console.error('loadProjects:', err);
     setListError(err.message);
     refreshDot.style.background = '#FF3B30';
+  }
+}
+
+function updateListHeader() {
+  const sub = document.getElementById('list-header-sub');
+  if (sub) {
+    sub.textContent = currentUser ? currentUser.name : '';
   }
 }
 
@@ -1132,6 +1238,7 @@ function renderMessages(msgs) {
 
     const row = document.createElement('div');
     row.className = `msg-row ${role}${isGroupGap ? ' group-gap' : ''}`;
+    row.dataset.msgId = msg.id;
 
     if (role === 'received') {
       const av = document.createElement('div');
@@ -1163,6 +1270,7 @@ function renderMessages(msgs) {
 
 /* ── Back ────────────────────────────────────────────────── */
 function goBack() {
+  clearPolling();
   viewChat.classList.remove('active');
   viewList.classList.remove('pushed');
   activeProject = null;
@@ -1177,10 +1285,26 @@ function scrollToBottom(smooth = true) {
   messagesArea.scrollTo({ top: messagesArea.scrollHeight, behavior: smooth ? 'smooth' : 'instant' });
 }
 
-/* ── Send message (optimistic + simulated reply) ─────────── */
-function sendMessage() {
+/* ── Send message — real 2-way via createMessage mutation ─── */
+const CREATE_MESSAGE_MUTATION = `
+  mutation SendMessage($input: CreateMessageInput!) {
+    createMessage(input: $input) {
+      success
+    }
+  }
+`;
+
+let pollTimer = null;
+let pollDeadline = null;
+let lastKnownMsgId = null;   // track newest message before send
+
+async function sendMessage() {
   const text = msgInput.value.trim();
   if (!text || !activeProject) return;
+  if (!activeProject.roomId) {
+    showToast('No chat room for this project yet.');
+    return;
+  }
 
   msgInput.value = '';
   msgInput.style.height = 'auto';
@@ -1190,7 +1314,7 @@ function sendMessage() {
   const emptyEl = msgContent.querySelector('[style*="flex-direction:column"]');
   if (emptyEl) emptyEl.remove();
 
-  // Append sent bubble
+  // Optimistic sent bubble
   const row = document.createElement('div');
   row.className = 'msg-row sent group-gap';
   const bubble = document.createElement('div');
@@ -1203,39 +1327,91 @@ function sendMessage() {
   dr.className = 'delivery-row';
   dr.innerHTML = '<span class="delivery-receipt">Sending…</span>';
   msgContent.appendChild(dr);
-
   scrollToBottom();
 
-  setTimeout(() => { dr.innerHTML = '<span class="delivery-receipt">Delivered</span>'; scrollToBottom(); }, 600);
+  // Record the newest msg id we know about so we can detect the reply
+  lastKnownMsgId = getMostRecentMsgId();
 
-  // Typing indicator
-  setTimeout(() => { typingEl.style.display = 'flex'; scrollToBottom(); }, 1000);
-
-  // Simulated Clarity reply
-  const replies = [
-    `Got it. Logging to ${activeProject.name}'s PLAT file now.`,
-    `Understood. I'll flag that and follow up before EOD.`,
-    `Noted — added to project notes for ${activeProject.name}.`,
-    `On it. I'll surface this in tomorrow's briefing.`,
-    `Logged ✓. Anything else on ${activeProject.name}?`,
-  ];
-  const reply = replies[Math.floor(Math.random() * replies.length)];
-
-  setTimeout(() => {
-    typingEl.style.display = 'none';
-    const rRow = document.createElement('div');
-    rRow.className = 'msg-row received group-gap';
-    const av = document.createElement('div');
-    av.className = 'msg-avatar';
-    av.textContent = '✦';
-    const rb = document.createElement('div');
-    rb.className = 'bubble received tail';
-    rb.textContent = reply;
-    rRow.appendChild(av);
-    rRow.appendChild(rb);
-    msgContent.appendChild(rRow);
+  try {
+    await gql(CREATE_MESSAGE_MUTATION, {
+      input: {
+        roomId: activeProject.roomId,
+        attributes: {
+          content: text,
+          role: 'user',
+          skipAiResponse: false,
+        }
+      }
+    });
+    dr.innerHTML = '<span class="delivery-receipt">Delivered</span>';
     scrollToBottom();
-  }, 2800);
+
+    // Start polling for Clarity's reply
+    startPollingForReply(activeProject.roomId);
+
+  } catch (err) {
+    console.error('sendMessage:', err);
+    dr.innerHTML = '<span class="delivery-receipt" style="color:#FF3B30">Failed to send</span>';
+    scrollToBottom();
+  }
+}
+
+function getMostRecentMsgId() {
+  // Find the id of the most recently rendered message bubble
+  const rows = msgContent.querySelectorAll('.msg-row[data-msg-id]');
+  if (!rows.length) return null;
+  return rows[rows.length - 1].dataset.msgId || null;
+}
+
+function startPollingForReply(roomId) {
+  clearPolling();
+  typingEl.style.display = 'flex';
+  scrollToBottom();
+
+  const sent = Date.now();
+  const TIMEOUT = 45000;   // 45s max wait
+  const INTERVAL = 2500;   // poll every 2.5s
+
+  pollTimer = setInterval(async () => {
+    if (Date.now() - sent > TIMEOUT) {
+      clearPolling();
+      typingEl.style.display = 'none';
+      return;
+    }
+    try {
+      const data = await gql(MESSAGES_QUERY, { roomId });
+      const msgs = (data.messages || []).sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+      // Look for a new assistant message with complete HTML (not mid-stream tool text)
+      const newAssistant = msgs.filter(m =>
+        m.role === 'assistant' &&
+        (m.content || '').includes('<div') &&
+        m.id !== lastKnownMsgId
+      );
+
+      if (newAssistant.length > 0) {
+        clearPolling();
+        typingEl.style.display = 'none';
+        // Re-render the full message list with the new reply
+        renderMessages(msgs);
+      }
+    } catch (e) {
+      console.warn('poll error:', e);
+    }
+  }, INTERVAL);
+}
+
+function clearPolling() {
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+}
+
+/* ── Toast ───────────────────────────────────────────────── */
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:calc(80px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:#1c1c1e;color:#fff;padding:8px 16px;border-radius:20px;font-size:13px;z-index:999;white-space:nowrap;';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2500);
 }
 
 /* ── Input auto-resize & send btn state ─────────────────── */
@@ -1277,8 +1453,93 @@ if ('serviceWorker' in navigator) {
     .catch(e => console.log('SW err:', e));
 }
 
+/* ── Logout / switch rep ─────────────────────────────────── */
+document.getElementById('logout-btn').addEventListener('click', () => {
+  clearUser();
+  allProjects = [];
+  showLoginView();
+});
+
+/* ══════════════════════════════════════════════════════════
+   LOGIN VIEW (IFC-667)
+══════════════════════════════════════════════════════════ */
+const viewLogin = document.getElementById('view-login');
+const loginList = document.getElementById('login-list');
+
+const USERS_QUERY = `
+  query RepList {
+    users {
+      id
+      name
+      email
+      isSales
+      isAdmin
+    }
+  }
+`;
+
+async function showLoginView() {
+  // Hide all other views
+  viewList.style.display = 'none';
+  viewPipeline.classList.remove('pipeline-active');
+  viewLogin.classList.remove('hidden');
+
+  loginList.innerHTML = `
+    <div class="login-loading">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Loading reps…</div>
+    </div>`;
+
+  try {
+    const data = await gql(USERS_QUERY, {}, null);  // bypass token (no userId)
+    const users = (data.users || [])
+      .filter(u => u.isSales || u.isAdmin)
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    loginList.innerHTML = '';
+    users.forEach(u => {
+      const row = document.createElement('div');
+      row.className = 'login-user-row';
+      const bg   = avatarColor(u.name);
+      const init = initials(u.name);
+      row.innerHTML = `
+        <div class="login-user-avatar" style="background:${bg}">${init}</div>
+        <div class="login-user-info">
+          <div class="login-user-name">${escHtml(u.name)}</div>
+          <div class="login-user-email">${escHtml(u.email)}</div>
+        </div>
+        <div class="login-chevron">›</div>`;
+      row.addEventListener('click', () => loginAs(u));
+      loginList.appendChild(row);
+    });
+  } catch (err) {
+    loginList.innerHTML = `
+      <div style="padding:20px;text-align:center;color:#636366;font-size:14px;">
+        Failed to load users.<br><small>${err.message}</small>
+      </div>`;
+  }
+}
+
+function loginAs(user) {
+  saveUser(user);
+  viewLogin.classList.add('hidden');
+  viewList.style.display = '';
+  // Reset and load this rep's projects
+  allProjects = [];
+  pipelineProjects = [];
+  pipelineLoaded = false;
+  loadProjects();
+}
+
 /* ── Bootstrap ───────────────────────────────────────────── */
-loadProjects();
+loadStoredUser();
+if (currentUser) {
+  // Already logged in — go straight to messages
+  viewLogin.classList.add('hidden');
+  loadProjects();
+} else {
+  showLoginView();
+}
 
 /* ══════════════════════════════════════════════════════════
    PIPELINE VIEW (IFC-656)

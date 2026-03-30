@@ -622,9 +622,7 @@ body {
 <div id="view-list" class="view">
 
   <div class="list-header">
-      <span id="status-time">9:41</span>
-      <span style="font-size:11px;color:#8e8e93">clarity.ifcroofing.com</span>
-      <span>📶 🔋</span>
+
     <div class="header">
       <div>
         <div class="header-title">Clarity</div>
@@ -786,9 +784,7 @@ body {
 <div id="view-pipeline" class="view">
 
   <div class="list-header">
-      <span id="pipeline-status-time">9:41</span>
-      <span style="font-size:11px;color:#8e8e93">clarity.ifcroofing.com</span>
-      <span>📶 🔋</span>
+
     <div class="pipeline-header">
       <div class="pipeline-title">Pipeline</div>
     </div>
@@ -1006,20 +1002,60 @@ const LIST_QUERY = `
   }
 `;
 
+
+/* ── Smart Cache — instant load from localStorage, background refresh ── */
+const CACHE_KEY = 'clarity_projects_cache';
+const CACHE_TTL = 5 * 60 * 1000; // 5 min
+
+function getCachedProjects() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const { data, ts, userId } = JSON.parse(raw);
+    if (currentUser && userId !== currentUser.id) return null; // different user
+    if (Date.now() - ts > CACHE_TTL) return null; // expired
+    return data;
+  } catch { return null; }
+}
+
+function setCachedProjects(data) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({
+      data,
+      ts: Date.now(),
+      userId: currentUser?.id
+    }));
+  } catch {}
+}
+
 async function loadProjects() {
-  setListLoading();
-  // Update header subtitle to show who's logged in
   updateListHeader();
+
+  // Show cached data instantly if available
+  const cached = getCachedProjects();
+  if (cached && cached.length) {
+    allProjects = cached;
+    renderList(allProjects);
+    refreshDot.style.background = '#FF9500'; // orange = cached, refreshing
+  } else {
+    setListLoading();
+  }
+
+  // Fetch fresh data in background
   try {
     const mine = currentUser != null;
     const data = await gql(LIST_QUERY, { mine });
     allProjects = data.projects.projects || [];
+    setCachedProjects(allProjects);
     renderList(allProjects);
     refreshDot.style.background = '#34C759'; // green = fresh
   } catch (err) {
-    console.error('loadProjects:', err);
-    setListError(err.message);
-    refreshDot.style.background = '#FF3B30';
+    if (!cached || !cached.length) {
+      console.error('loadProjects:', err);
+      setListError(err.message);
+      refreshDot.style.background = '#FF3B30';
+    }
+    // If we had cache, keep showing it
   }
 }
 

@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Clarity — Messages</title>
+
+<!-- PWA Meta -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#00305C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Clarity">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro', 'Segoe UI', sans-serif;
+    background: #000;
+    color: #fff;
+    max-width: 430px;
+    margin: 0 auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Status bar mock ─────────────────────────────── */
+  .status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 20px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  /* ── Header ──────────────────────────────────────── */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 20px 12px;
+  }
+  .header-title {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .header-actions {
+    display: flex;
+    gap: 8px;
+  }
+  .header-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #1c1c1e;
+    border: none;
+    color: #007AFF;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  /* ── Global Agents Gallery (iMessage-style circles) ── */
+  .gallery-section {
+    padding: 0 8px 16px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .gallery-section::-webkit-scrollbar { display: none; }
+  .gallery-scroll {
+    display: flex;
+    gap: 4px;
+    padding: 0 8px;
+    min-width: min-content;
+  }
+  .gallery-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 80px;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  .gallery-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 6px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.15s;
+  }
+  .gallery-avatar:active { transform: scale(0.92); }
+  .gallery-avatar.clarity { background: linear-gradient(135deg, #00305C, #0054A0); }
+  .gallery-avatar.mark { background: linear-gradient(135deg, #1B6B3A, #2DA05A); }
+  .gallery-avatar.guide { background: linear-gradient(135deg, #8B4513, #C6772E); }
+  .gallery-avatar.feedback { background: linear-gradient(135deg, #7B1FA2, #AB47BC); }
+  .gallery-avatar.sub { 
+    width: 56px; height: 56px; font-size: 14px;
+    background: #1c1c1e; border: 2px solid #333;
+  }
+  .gallery-label {
+    font-size: 11px;
+    color: #8e8e93;
+    text-align: center;
+    max-width: 72px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .gallery-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background: #007AFF;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    border: 2px solid #000;
+  }
+
+  /* ── Divider ─────────────────────────────────────── */
+  .divider {
+    height: 1px;
+    background: #1c1c1e;
+    margin: 4px 20px 8px;
+  }
+  .section-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #8e8e93;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 8px 20px 8px;
+  }
+
+  /* ── Project Clarity List (iMessage-style list) ──── */
+  .chat-list { padding: 0; }
+  .chat-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    gap: 12px;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.15s;
+  }
+  .chat-item:active { background: #1c1c1e; }
+  .chat-item + .chat-item {
+    border-top: 1px solid rgba(255,255,255,0.05);
+  }
+  .chat-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #1c1c1e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: #8e8e93;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .chat-status {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid #000;
+  }
+  .chat-status.green { background: #34C759; }
+  .chat-status.amber { background: #FF8A00; }
+  .chat-status.red { background: #E74C3C; }
+  .chat-content {
+    flex: 1;
+    min-width: 0;
+  }
+  .chat-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 2px;
+  }
+  .chat-name {
+    font-size: 16px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .chat-time {
+    font-size: 13px;
+    color: #8e8e93;
+    flex-shrink: 0;
+    margin-left: 8px;
+  }
+  .chat-preview {
+    font-size: 14px;
+    color: #8e8e93;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .chat-badge {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #007AFF;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 6px;
+  }
+  .chat-pin {
+    color: #FF9500;
+    font-size: 12px;
+    margin-left: 4px;
+  }
+
+  /* ── Search bar ──────────────────────────────────── */
+  .search-bar { padding: 0 16px 12px; }
+  .search-input {
+    width: 100%;
+    background: #1c1c1e;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 16px;
+    color: #fff;
+    font-size: 15px;
+    outline: none;
+  }
+  .search-input::placeholder { color: #636366; }
+
+  /* ── Bottom nav ──────────────────────────────────── */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 430px;
+    background: rgba(0,0,0,0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid #1c1c1e;
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 0 env(safe-area-inset-bottom, 24px);
+  }
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    color: #636366;
+    font-size: 10px;
+    cursor: pointer;
+  }
+  .nav-item.active { color: #007AFF; }
+  .nav-icon { font-size: 22px; }
+
+  /* Compose button */
+  .compose-btn {
+    position: fixed;
+    bottom: calc(env(safe-area-inset-bottom, 24px) + 56px);
+    right: calc(50% - 195px);
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #00305C;
+    border: none;
+    color: #fff;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,48,92,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s;
+  }
+  .compose-btn:active { transform: scale(0.9); }
+
+  .spacer { height: 100px; }
+
+  /* PWA standalone mode: hide status bar mock */
+  @media all and (display-mode: standalone) {
+    .status-bar { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Status bar (only visible in browser) -->
+<div class="status-bar">
+  <span>1:26</span>
+  <span style="font-size:11px; color:#8e8e93">clarity.ifcroofing.com</span>
+  <span>📶 🔋</span>
+</div>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-title">Clarity</div>
+  <div class="header-actions">
+    <button class="header-btn">⋯</button>
+    <button class="header-btn">✏️</button>
+  </div>
+</div>
+
+<!-- Search -->
+<div class="search-bar">
+  <input class="search-input" placeholder="🔍  Search conversations..." />
+</div>
+
+<!-- Global Agents Gallery -->
+<div class="gallery-section">
+  <div class="gallery-scroll">
+    <div class="gallery-item">
+      <div class="gallery-avatar clarity">
+        ✦
+        <span class="gallery-badge">3</span>
+      </div>
+      <div class="gallery-label">Clarity</div>
+    </div>
+    <div class="gallery-item">
+      <div class="gallery-avatar mark">M</div>
+      <div class="gallery-label">Mark</div>
+    </div>
+    <div class="gallery-item">
+      <div class="gallery-avatar guide">G</div>
+      <div class="gallery-label">Guide</div>
+    </div>
+    <div class="gallery-item">
+      <div class="gallery-avatar feedback">📋</div>
+      <div class="gallery-label">IFC Feedback</div>
+    </div>
+    <div class="gallery-item">
+      <div class="gallery-avatar sub">🎯</div>
+      <div class="gallery-label">Marketing</div>
+    </div>
+    <div class="gallery-item">
+      <div class="gallery-avatar sub">PH</div>
+      <div class="gallery-label">Perry Hix</div>
+    </div>
+    <div class="gallery-item">
+      <div class="gallery-avatar sub">📧</div>
+      <div class="gallery-label">Gmail</div>
+    </div>
+    <div class="gallery-item">
+      <div class="gallery-avatar sub">🏗️</div>
+      <div class="gallery-label">PLAT</div>
+    </div>
+    <div class="gallery-item">
+      <div class="gallery-avatar sub">📇</div>
+      <div class="gallery-label">Contact Clean</div>
+    </div>
+    <div class="gallery-item">
+      <div class="gallery-avatar sub">+</div>
+      <div class="gallery-label">New</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+<div class="section-label">Project Clarities</div>
+
+<!-- Project Clarity List -->
+<div class="chat-list">
+  <div class="chat-item">
+    <div class="chat-avatar">
+      <span>BB</span>
+      <div class="chat-status green"></div>
+    </div>
+    <div class="chat-content">
+      <div class="chat-top-row">
+        <span class="chat-name">Brett Bargery — ENOUGH DAMAGE<span class="chat-pin">📌</span></span>
+        <span class="chat-time">2:38 PM</span>
+      </div>
+      <div class="chat-preview">Clarity: That's the long game paying off. Logged to @...</div>
+    </div>
+  </div>
+
+  <div class="chat-item">
+    <div class="chat-avatar">
+      <span>CI</span>
+      <div class="chat-status amber"></div>
+    </div>
+    <div class="chat-content">
+      <div class="chat-top-row">
+        <span class="chat-name">Chris Isbell — SUPP COMPLETED</span>
+        <span class="chat-time">1:18 AM</span>
+      </div>
+      <div class="chat-preview">Clarity: ⚠️ Gemini API Error 400: Somethin...</div>
+    </div>
+    <div class="chat-badge">1</div>
+  </div>
+
+  <div class="chat-item">
+    <div class="chat-avatar">
+      <span>DR</span>
+      <div class="chat-status amber"></div>
+    </div>
+    <div class="chat-content">
+      <div class="chat-top-row">
+        <span class="chat-name">Dan Reese — SUPP SENT</span>
+        <span class="chat-time">Mar 26</span>
+      </div>
+      <div class="chat-preview">Clarity: Dan Reese — SUPP SENT | 34 days 0/2 ham...</div>
+    </div>
+    <div class="chat-badge">1</div>
+  </div>
+
+  <div class="chat-item">
+    <div class="chat-avatar">
+      <span>VS</span>
+      <div class="chat-status red"></div>
+    </div>
+    <div class="chat-content">
+      <div class="chat-top-row">
+        <span class="chat-name">Vince Slapa — PA-LAW</span>
+        <span class="chat-time">Mar 26</span>
+      </div>
+      <div class="chat-preview">Clarity: Vince Slapa - Wheaton Square Apartments — ...</div>
+    </div>
+    <div class="chat-badge">1</div>
+  </div>
+
+  <div class="chat-item">
+    <div class="chat-avatar">
+      <span style="color:#34C759">PH</span>
+      <div class="chat-status green"></div>
+    </div>
+    <div class="chat-content">
+      <div class="chat-top-row">
+        <span class="chat-name">Perry Hix — INSPECTED<span class="chat-pin">📌</span></span>
+        <span class="chat-time">Mar 24</span>
+      </div>
+      <div class="chat-preview">Clarity: ✓ Perry Hix status updated → INSPECTED</div>
+    </div>
+    <div class="chat-badge">1</div>
+  </div>
+
+  <div class="chat-item">
+    <div class="chat-avatar">
+      <span>KB</span>
+      <div class="chat-status amber"></div>
+    </div>
+    <div class="chat-content">
+      <div class="chat-top-row">
+        <span class="chat-name">Karen Baughman — ADJ SCHEDULED</span>
+        <span class="chat-time">Mar 24</span>
+      </div>
+      <div class="chat-preview">Clarity: Karen Baughman — LEAD | 0 days in status A...</div>
+    </div>
+    <div class="chat-badge">1</div>
+  </div>
+
+  <div class="chat-item">
+    <div class="chat-avatar">
+      <span>MS</span>
+    </div>
+    <div class="chat-content">
+      <div class="chat-top-row">
+        <span class="chat-name">Mike Schroeder — LOST</span>
+        <span class="chat-time">Mar 24</span>
+      </div>
+      <div class="chat-preview">Clarity: Mike Schroeder — LOST | 147 days in sta...</div>
+    </div>
+  </div>
+
+  <div class="chat-item">
+    <div class="chat-avatar">
+      <span>AH</span>
+    </div>
+    <div class="chat-content">
+      <div class="chat-top-row">
+        <span class="chat-name">Anil Han — BILLED-BACKEND</span>
+        <span class="chat-time">Mar 23</span>
+      </div>
+      <div class="chat-preview">Clarity: Anil Han — BILLED-BACKEND | 46 days in sta...</div>
+    </div>
+  </div>
+</div>
+
+<div class="spacer"></div>
+
+<!-- Compose -->
+<button class="compose-btn">✏️</button>
+
+<!-- Bottom nav -->
+<div class="bottom-nav">
+  <div class="nav-item active">
+    <span class="nav-icon">💬</span>
+    <span>Messages</span>
+  </div>
+  <div class="nav-item">
+    <span class="nav-icon">📊</span>
+    <span>Pipeline</span>
+  </div>
+  <div class="nav-item">
+    <span class="nav-icon">🔗</span>
+    <span>IFC App</span>
+  </div>
+</div>
+
+<!-- Service Worker Registration -->
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js')
+    .then(reg => console.log('SW registered:', reg.scope))
+    .catch(err => console.log('SW failed:', err));
+}
+</script>
+
+</body>
+</html>

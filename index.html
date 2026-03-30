@@ -1500,18 +1500,17 @@ function startPollingForReply(roomId) {
       const data = await gql(MESSAGES_QUERY, { roomId });
       const msgs = (data.messages || []).sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt) || Number(a.id) - Number(b.id));
 
-      // Look for a new assistant message with complete HTML (not mid-stream tool text)
-      const newAssistant = msgs.filter(m =>
-        m.role === 'assistant' &&
-        (m.content || '').includes('<div') &&
-        m.id !== lastKnownMsgId
+      // Look for any new assistant message after the one we last knew about
+      const lastUserIdx = msgs.reduce((acc, m, i) => m.role === 'user' ? i : acc, -1);
+      const hasNewReply = msgs.some((m, i) => 
+        i > lastUserIdx && m.role === 'assistant' && (m.content || '').length > 10
       );
 
-      if (newAssistant.length > 0) {
+      if (hasNewReply) {
         clearPolling();
         typingEl.style.display = 'none';
-        // Re-render the full message list with the new reply
         renderMessages(msgs);
+        scrollToBottom();
       }
     } catch (e) {
       console.warn('poll error:', e);

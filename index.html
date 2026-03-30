@@ -11,7 +11,7 @@
 <!-- PWA Meta -->
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#000000">
-<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Clarity">
 <link rel="apple-touch-icon" href="/icons/icon-192.png">
@@ -54,7 +54,7 @@ body {
 #view-chat.active { transform: translateX(0); }
 
 /* ─── Status Bar (browser only) ─────────────────────────── */
-.status-bar {
+.status-bar { display: none !important; visibility: hidden; height: 0; overflow: hidden; }
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -62,7 +62,7 @@ body {
   font-size: 14px; font-weight: 600;
   flex-shrink: 0;
 }
-@media all and (display-mode: standalone) { .status-bar { display: none; } }
+.status-bar { display: none !important; visibility: hidden; height: 0; overflow: hidden; }
 
 /* ─── List View: Header ─────────────────────────────────── */
 .list-header { flex-shrink: 0; }
@@ -267,6 +267,18 @@ body {
 }
 .chat-info-btn:active { opacity: 0.55; }
 
+/* Jump-to-app button */
+.jump-to-app-btn {
+  background: none; border: none;
+  color: #007AFF; font-size: 11px; font-weight: 600; font-family: inherit;
+  cursor: pointer; padding: 5px 0 5px 8px;
+  -webkit-tap-highlight-color: transparent; flex-shrink: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  letter-spacing: 0.1px;
+}
+.jump-to-app-btn:active { opacity: 0.55; }
+.jump-to-app-icon { font-size: 17px; line-height: 1; }
+
 /* Messages area */
 .messages-area {
   flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
@@ -397,6 +409,53 @@ body {
 @keyframes pulse-dot {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
+}
+
+/* ── Pinned chat item highlight ─────────────────────────── */
+.chat-item.pinned-item { background: rgba(255,149,0,0.04); }
+.chat-item.pinned-item .chat-name::before {
+  content: "📌 "; font-size: 11px; vertical-align: middle;
+}
+
+/* ── Pin icon on chat items ──────────────────────────────── */
+.pin-btn {
+  background: none; border: none; padding: 6px 0 6px 6px; cursor: pointer;
+  color: #3c3c3e; font-size: 16px; flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent; line-height: 1;
+  transition: color 0.15s;
+}
+.pin-btn.pinned { color: #FF9500; }
+.pin-btn:active { opacity: 0.6; }
+
+/* ── Agent tab dropdown ──────────────────────────────────── */
+.agent-tab-bar {
+  flex-shrink: 0;
+  display: flex; gap: 0;
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+  background: rgba(10,10,10,0.97);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  padding: 0 4px;
+}
+.agent-tab-bar::-webkit-scrollbar { display: none; }
+
+.agent-tab {
+  flex-shrink: 0; padding: 9px 14px;
+  font-size: 12px; font-weight: 600; color: #636366;
+  cursor: pointer; border: none; background: none;
+  font-family: inherit; -webkit-tap-highlight-color: transparent;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.agent-tab.active { color: #fff; border-bottom-color: #007AFF; }
+.agent-tab:active { opacity: 0.7; }
+
+/* ── Gallery items — clickable global agents ─────────────── */
+.gallery-item.agent-clickable .gallery-avatar {
+  cursor: pointer;
+}
+.gallery-item.agent-clickable:active .gallery-avatar {
+  transform: scale(0.88);
 }
 
 /* ══════════════════════════════════════════════════════════ */
@@ -597,8 +656,11 @@ body {
   <div class="login-tagline">Your AI roofing intelligence layer</div>
 
   <div class="google-signin-wrap">
+    <!-- GIS renders its official button here -->
+    <div id="g_id_signin_btn"></div>
+
+    <!-- Fallback hand-rolled button (shown until GIS renders) -->
     <button class="google-btn" id="google-btn">
-      <!-- Google "G" logo -->
       <svg width="20" height="20" viewBox="0 0 48 48">
         <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
         <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
@@ -607,15 +669,8 @@ body {
       </svg>
       Sign in with Google
     </button>
-    <div class="login-error" id="login-error"></div>
-  </div>
 
-  <!-- Hidden GIS div (fallback / programmatic trigger) -->
-  <div id="g_id_onload"
-       data-client_id="855240747767-vjh41atucabiji7vhltfbbh48731idj7.apps.googleusercontent.com"
-       data-callback="handleGoogleCredential"
-       data-auto_prompt="false"
-       style="display:none">
+    <div class="login-error" id="login-error" style="display:none;"></div>
   </div>
 </div>
 
@@ -626,11 +681,7 @@ body {
 <div id="view-list" class="view">
 
   <div class="list-header">
-    <div class="status-bar">
-      <span id="status-time">9:41</span>
-      <span style="font-size:11px;color:#8e8e93">clarity.ifcroofing.com</span>
-      <span>📶 🔋</span>
-    </div>
+
     <div class="header">
       <div>
         <div class="header-title">Clarity</div>
@@ -651,19 +702,19 @@ body {
     <!-- Global Agents gallery -->
     <div class="gallery-section">
       <div class="gallery-scroll">
-        <div class="gallery-item">
-          <div class="gallery-avatar clarity">✦<span class="gallery-badge">3</span></div>
+        <div class="gallery-item agent-clickable" data-agent="clarity">
+          <div class="gallery-avatar clarity">✦<span class="gallery-badge" id="clarity-badge" style="display:none">3</span></div>
           <div class="gallery-label">Clarity</div>
         </div>
-        <div class="gallery-item">
+        <div class="gallery-item agent-clickable" data-agent="mark">
           <div class="gallery-avatar mark">M</div>
           <div class="gallery-label">Mark</div>
         </div>
-        <div class="gallery-item">
+        <div class="gallery-item agent-clickable" data-agent="guide">
           <div class="gallery-avatar guide">G</div>
           <div class="gallery-label">Guide</div>
         </div>
-        <div class="gallery-item">
+        <div class="gallery-item agent-clickable" data-agent="feedback">
           <div class="gallery-avatar feedback">📋</div>
           <div class="gallery-label">IFC Feedback</div>
         </div>
@@ -738,13 +789,26 @@ body {
       <div class="chat-contact-stage-sm" id="chat-header-stage"></div>
     </div>
 
-    <button class="chat-info-btn">
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <circle cx="10" cy="10" r="9" stroke="#007AFF" stroke-width="1.8"/>
-        <rect x="9.1" y="9" width="1.8" height="6" rx="0.9" fill="#007AFF"/>
-        <circle cx="10" cy="6.2" r="1" fill="#007AFF"/>
-      </svg>
+    <button class="jump-to-app-btn" id="jump-to-app-btn" title="Open in IFC App">
+      <span class="jump-to-app-icon">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M7 3H3.5A1.5 1.5 0 0 0 2 4.5v10A1.5 1.5 0 0 0 3.5 16h10A1.5 1.5 0 0 0 15 14.5V11" stroke="#007AFF" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M10 2h6v6" stroke="#007AFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M16 2L9 9" stroke="#007AFF" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span>App</span>
     </button>
+  </div>
+
+  <!-- Agent tab bar -->
+  <div class="agent-tab-bar" id="agent-tab-bar">
+    <button class="agent-tab active" data-tab="clarity">CLARITY</button>
+    <button class="agent-tab" data-tab="insurance">SUP</button>
+    <button class="agent-tab" data-tab="construction">BUILD</button>
+    <button class="agent-tab" data-tab="client">CALLING</button>
+    <button class="agent-tab" data-tab="upgrade">UPGRADE</button>
+    <button class="agent-tab" data-tab="order">ORDER</button>
   </div>
 
   <!-- Messages -->
@@ -792,11 +856,7 @@ body {
 <div id="view-pipeline" class="view">
 
   <div class="list-header">
-    <div class="status-bar">
-      <span id="pipeline-status-time">9:41</span>
-      <span style="font-size:11px;color:#8e8e93">clarity.ifcroofing.com</span>
-      <span>📶 🔋</span>
-    </div>
+
     <div class="pipeline-header">
       <div class="pipeline-title">Pipeline</div>
     </div>
@@ -822,14 +882,15 @@ body {
 
 <script>
 /* ═══════════════════════════════════════════════════════════
-   Clarity PWA — Phase 4: Full 2-way Clarity Connection (IFC-667)
-   • Login: pick-a-rep screen, stored in localStorage
-   • Send: createMessage mutation with X-User-Id header
-   • Poll: wait for Clarity AI reply (detect final HTML response)
-   • Scope: projects(mine: true) per logged-in rep
+   Clarity PWA — Phase 5: Google SSO Login (IFC-678)
+   • Login: Google Identity Services → signInUser mutation
+   • Auth:  JWT Bearer token stored in localStorage
+   • API:   all calls via /api/user-graphql (Authorization header)
+   • Scope: projects(mine: true) scoped to signed-in rep
 ═══════════════════════════════════════════════════════════ */
 
-const GQL = '/api/graphql';
+const GQL      = '/api/graphql';       // unauthenticated (signInUser only)
+const USER_GQL = '/api/user-graphql';  // nginx passes Authorization header through
 
 /* ── Auth state ──────────────────────────────────────────── */
 const AUTH_KEY = 'clarity_user';
@@ -855,42 +916,29 @@ function clearUser() {
 }
 
 /* ── GraphQL fetch helper ────────────────────────────────── */
-// Uses /api/user-graphql with Bearer token when logged in via SSO,
-// falls back to /api/graphql with X-User-Id for unauthenticated reads.
-async function gql(query, variables = {}, userId = null) {
-  // If we have a real Bearer token, use the user-graphql proxy
-  if (currentUser?.token) {
-    const res = await fetch(USER_GQL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${currentUser.token}`,
-      },
-      body: JSON.stringify({ query, variables }),
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const json = await res.json();
-    // Token expired — kick to login
-    if (json.errors?.some(e => e.message?.toLowerCase().includes('authenticated') || e.message?.toLowerCase().includes('unauthorized'))) {
-      clearUser();
-      showLoginView();
-      throw new Error('Session expired. Please sign in again.');
-    }
-    if (json.errors?.length) throw new Error(json.errors[0].message);
-    return json.data;
+// useAuth=true  → /api/user-graphql + Authorization: Bearer <token>
+// useAuth=false → /api/graphql  (signInUser only — no token needed)
+async function gql(query, variables = {}, useAuth = true) {
+  const endpoint = useAuth ? USER_GQL : GQL;
+  const headers  = { 'Content-Type': 'application/json' };
+  if (useAuth && currentUser?.token) {
+    headers['Authorization'] = currentUser.token.startsWith('user-id:') ? currentUser.token : `Bearer ${currentUser.token}`;
   }
-
-  // Unauthenticated read (sign-in mutation, user list, etc.)
-  const headers = { 'Content-Type': 'application/json' };
-  const uid = userId || currentUser?.id;
-  if (uid) headers['X-User-Id'] = String(uid);
-  const res = await fetch(GQL, {
+  const res = await fetch(endpoint, {
     method: 'POST',
     headers,
     body: JSON.stringify({ query, variables }),
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const json = await res.json();
+  // Token expired / auth error → kick back to login
+  if (useAuth && json.errors?.some(e =>
+    /authenticated|unauthorized|not authorized/i.test(e.message || '')
+  )) {
+    clearUser();
+    showLoginView();
+    throw new Error('Session expired. Please sign in again.');
+  }
   if (json.errors?.length) throw new Error(json.errors[0].message);
   return json.data;
 }
@@ -1001,10 +1049,11 @@ const refreshDot  = document.getElementById('refresh-dot');
    LIST VIEW — Load & Render
 ══════════════════════════════════════════════════════════ */
 const LIST_QUERY = `
-  query ProjectList($mine: Boolean) {
-    projects(mine: $mine) {
+  query ProjectList($mine: Boolean, $page: ID, $perPage: ID) {
+    projects(mine: $mine, page: $page, perPage: $perPage) {
       projects {
         id
+        jnid
         name
         recordStatus
         daysInStatus
@@ -1021,25 +1070,68 @@ const LIST_QUERY = `
             user { name }
           }
         }
+        insuranceRoom    { id }
+        constructionRoom { id }
+        clientRoom       { id }
       }
     }
   }
 `;
 
+
+/* ── Smart Cache — instant load from localStorage, background refresh ── */
+const CACHE_KEY = 'clarity_projects_cache';
+const CACHE_TTL = 5 * 60 * 1000; // 5 min
+
+function getCachedProjects() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const { data, ts, userId } = JSON.parse(raw);
+    if (currentUser && userId !== currentUser.id) return null; // different user
+    if (Date.now() - ts > CACHE_TTL) return null; // expired
+    return data;
+  } catch { return null; }
+}
+
+function setCachedProjects(data) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({
+      data,
+      ts: Date.now(),
+      userId: currentUser?.id
+    }));
+  } catch {}
+}
+
 async function loadProjects() {
-  setListLoading();
-  // Update header subtitle to show who's logged in
   updateListHeader();
+
+  // Show cached data instantly if available
+  const cached = getCachedProjects();
+  if (cached && cached.length) {
+    allProjects = cached;
+    renderList(allProjects);
+    refreshDot.style.background = '#FF9500'; // orange = cached, refreshing
+  } else {
+    setListLoading();
+  }
+
+  // Fetch fresh data in background
   try {
     const mine = currentUser != null;
-    const data = await gql(LIST_QUERY, { mine });
+    const data = await gql(LIST_QUERY, { mine, page: "1", perPage: "50" });
     allProjects = data.projects.projects || [];
+    setCachedProjects(allProjects);
     renderList(allProjects);
     refreshDot.style.background = '#34C759'; // green = fresh
   } catch (err) {
-    console.error('loadProjects:', err);
-    setListError(err.message);
-    refreshDot.style.background = '#FF3B30';
+    if (!cached || !cached.length) {
+      console.error('loadProjects:', err);
+      setListError(err.message);
+      refreshDot.style.background = '#FF3B30';
+    }
+    // If we had cache, keep showing it
   }
 }
 
@@ -1077,7 +1169,14 @@ function renderList(projects) {
   chatList.innerHTML = '';
   const frag = document.createDocumentFragment();
 
-  projects.forEach(p => {
+  // Pinned projects float to the top
+  const sorted = [...projects].sort((a, b) => {
+    const aPinned = pinnedIds.has(a.id) ? 0 : 1;
+    const bPinned = pinnedIds.has(b.id) ? 0 : 1;
+    return aPinned - bPinned;
+  });
+
+  sorted.forEach(p => {
     const nm       = p.name?.trim() || 'Unknown';
     const stage    = p.recordStatus || '—';
     const sc       = stageColor(stage);
@@ -1098,15 +1197,24 @@ function renderList(projects) {
       preview = `${stage} · ${p.daysInStatus || '0'} days`;
     }
 
+    const pinned   = pinnedIds.has(p.id);
+    const insRoomId = p.insuranceRoom?.id || '';
+    const bldRoomId = p.constructionRoom?.id || '';
+    const cliRoomId = p.clientRoom?.id || '';
+
     const item = document.createElement('div');
-    item.className = 'chat-item';
-    item.dataset.projectId  = p.id;
-    item.dataset.name       = nm;
-    item.dataset.stage      = stage;
-    item.dataset.statusColor= sc;
-    item.dataset.roomId     = roomId || '';
+    item.className = 'chat-item' + (pinned ? ' pinned-item' : '');
+    item.dataset.projectId    = p.id;
+    item.dataset.jnid         = p.jnid || '';
+    item.dataset.name         = nm;
+    item.dataset.stage        = stage;
+    item.dataset.statusColor  = sc;
+    item.dataset.roomId       = roomId || '';
+    item.dataset.insRoomId    = insRoomId;
+    item.dataset.bldRoomId    = bldRoomId;
+    item.dataset.cliRoomId    = cliRoomId;
     item.dataset.daysInStatus = p.daysInStatus || '0';
-    item.dataset.repName    = repName;
+    item.dataset.repName      = repName;
 
     item.innerHTML = `
       <div class="chat-avatar" style="background:${bg}">
@@ -1119,7 +1227,16 @@ function renderList(projects) {
           <span class="chat-time">${escHtml(ts)}</span>
         </div>
         <div class="chat-preview">${escHtml(preview.slice(0, 80))}</div>
-      </div>`;
+      </div>
+      <button class="pin-btn${pinned ? ' pinned' : ''}" data-project-id="${p.id}" title="${pinned ? 'Unpin' : 'Pin to top'}">
+        ${pinned ? '📌' : '·'}
+      </button>`;
+
+    // Pin button — stop propagation so it doesn't open chat
+    item.querySelector('.pin-btn').addEventListener('click', e => {
+      e.stopPropagation();
+      togglePin(p.id);
+    });
 
     item.addEventListener('click', () => openChat(item));
     frag.appendChild(item);
@@ -1159,6 +1276,31 @@ refreshBtn.addEventListener('click', () => {
 /* ══════════════════════════════════════════════════════════
    CHAT VIEW — Open & Render
 ══════════════════════════════════════════════════════════ */
+
+/* ── Resolve agenda_project room (same as app Clarity tab) ──── */
+const RESOLVE_ROOM_MUTATION = `
+  mutation FindOrCreateAgendaProjectRoom($input: FindOrCreateProjectRoomInput!) {
+    findOrCreateAgendaProjectRoom(input: $input) {
+      roomId
+    }
+  }
+`;
+
+async function resolveAgendaRoom(projectId) {
+  const data = await gql(RESOLVE_ROOM_MUTATION, { input: { projectId: String(projectId) } });
+  return data.findOrCreateAgendaProjectRoom?.roomId || null;
+}
+
+
+/* ── Resolve correct user-scoped room (matches app Clarity tab) ── */
+const RESOLVE_ROOM_QUERY = `
+  query ResolveRoom($projectId: ID!) {
+    projectGeneralChatRoom(projectId: $projectId) {
+      id
+    }
+  }
+`;
+
 const MESSAGES_QUERY = `
   query RoomMessages($roomId: ID!) {
     messages(roomId: $roomId) {
@@ -1172,7 +1314,7 @@ const MESSAGES_QUERY = `
   }
 `;
 
-function openChat(item) {
+async function openChat(item) {
   const name      = item.dataset.name;
   const stage     = item.dataset.stage;
   const sc        = item.dataset.statusColor;
@@ -1182,7 +1324,28 @@ function openChat(item) {
   const bg        = avatarColor(name);
   const init      = initials(name);
 
-  activeProject = { id: item.dataset.projectId, name, stage, roomId, daysInStatus: days, repName };
+  activeProject = {
+    id:         item.dataset.projectId,
+    jnid:       item.dataset.jnid || '',
+    name,
+    stage,
+    roomId,
+    insRoomId:  item.dataset.insRoomId  || '',
+    bldRoomId:  item.dataset.bldRoomId  || '',
+    cliRoomId:  item.dataset.cliRoomId  || '',
+    daysInStatus: days,
+    repName,
+    activeRoomId: roomId,
+  };
+
+  // Reset agent tab bar to CLARITY tab for project chats
+  activeAgentTab = 'clarity';
+  if (agentTabBar) {
+    agentTabBar.style.display = '';
+    agentTabBar.querySelectorAll('.agent-tab').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === 'clarity');
+    });
+  }
 
   // Update header
   headerAvatar.style.background = bg;
@@ -1202,12 +1365,24 @@ function openChat(item) {
   msgContent.innerHTML = '';
   typingEl.style.display = 'none';
 
-  if (roomId) {
-    showChatLoading();
-    fetchMessages(roomId);
-  } else {
-    // No room yet — show empty state
-    showNoRoomState(name, stage, days);
+  const projectId = item.dataset.projectId;
+  showChatLoading();
+  try {
+    // Resolve the correct user-scoped room (same as app Clarity tab)
+    const roomData = await gql(RESOLVE_ROOM_QUERY, { projectId: String(projectId) });
+    const resolvedRoomId = roomData.projectGeneralChatRoom?.id;
+    if (resolvedRoomId) {
+      activeProject.roomId = resolvedRoomId;
+      fetchMessages(resolvedRoomId);
+    } else if (roomId) {
+      fetchMessages(roomId);
+    } else {
+      showNoRoomState(name, stage, days);
+    }
+  } catch (err) {
+    console.warn('resolveRoom failed:', err);
+    if (roomId) { fetchMessages(roomId); }
+    else { showNoRoomState(name, stage, days); }
   }
 }
 
@@ -1258,7 +1433,7 @@ function renderMessages(msgs) {
   }
 
   // Messages come back newest-first from some APIs; sort oldest-first
-  const sorted = [...msgs].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+  const sorted = [...msgs].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt) || Number(a.id) - Number(b.id));
 
   let lastTs   = null;
   let lastRole = null;
@@ -1329,6 +1504,8 @@ function goBack() {
   viewChat.classList.remove('active');
   viewList.classList.remove('pushed');
   activeProject = null;
+  activeAgentTab = 'clarity';
+  if (agentTabBar) agentTabBar.style.display = '';
   setTimeout(() => {
     msgContent.innerHTML = '';
     typingEl.style.display = 'none';
@@ -1401,6 +1578,16 @@ async function sendMessage() {
     dr.innerHTML = '<span class="delivery-receipt">Delivered</span>';
     scrollToBottom();
 
+    // Re-fetch all messages to get correct server-assigned order
+    setTimeout(async () => {
+      try {
+        const data = await gql(MESSAGES_QUERY, { roomId: activeProject.roomId });
+        const msgs = data.messages || [];
+        if (msgs.length) renderMessages(msgs);
+        scrollToBottom(false);
+      } catch(e) { console.warn('post-send refetch:', e); }
+    }, 500);
+
     // Start polling for Clarity's reply
     startPollingForReply(activeProject.roomId);
 
@@ -1420,6 +1607,7 @@ function getMostRecentMsgId() {
 
 function startPollingForReply(roomId) {
   clearPolling();
+  window._lastPollSnapshot = null;
   typingEl.style.display = 'flex';
   scrollToBottom();
 
@@ -1435,20 +1623,26 @@ function startPollingForReply(roomId) {
     }
     try {
       const data = await gql(MESSAGES_QUERY, { roomId });
-      const msgs = (data.messages || []).sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+      const msgs = (data.messages || []).sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt) || Number(a.id) - Number(b.id));
 
-      // Look for a new assistant message with complete HTML (not mid-stream tool text)
-      const newAssistant = msgs.filter(m =>
-        m.role === 'assistant' &&
-        (m.content || '').includes('<div') &&
-        m.id !== lastKnownMsgId
+      // Detect Clarity's response: either a new assistant message OR 
+      // an existing one whose content changed (AI updates in-place)
+      const currentSnapshot = msgs.map(m => m.id + ':' + (m.content || '').length).join('|');
+      if (!window._lastPollSnapshot) window._lastPollSnapshot = currentSnapshot;
+      
+      const changed = currentSnapshot !== window._lastPollSnapshot;
+      window._lastPollSnapshot = currentSnapshot;
+      
+      // Check if there's a substantial assistant reply (not just a placeholder)
+      const hasSubstantialReply = msgs.some(m => 
+        m.role === 'assistant' && (m.content || '').length > 50
       );
-
-      if (newAssistant.length > 0) {
+      
+      if (changed && hasSubstantialReply) {
         clearPolling();
         typingEl.style.display = 'none';
-        // Re-render the full message list with the new reply
         renderMessages(msgs);
+        scrollToBottom();
       }
     } catch (e) {
       console.warn('poll error:', e);
@@ -1477,7 +1671,15 @@ msgInput.addEventListener('input', () => {
 });
 
 msgInput.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    // Use tab-aware send if Phase 6 is initialized, otherwise fall back
+    if (typeof sendMessageOnActiveTab === 'function') {
+      sendMessageOnActiveTab();
+    } else {
+      sendMessage();
+    }
+  }
 });
 
 sendBtn.addEventListener('click', sendMessage);
@@ -1492,14 +1694,7 @@ if (typeof visualViewport !== 'undefined') {
   });
 }
 
-/* ── Live clock in status bar ────────────────────────────── */
-function updateClock() {
-  const now = new Date();
-  document.getElementById('status-time').textContent =
-    now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-}
-updateClock();
-setInterval(updateClock, 30000);
+/* ── Live clock (disabled — status bar removed) ─────────── */
 
 /* ── Service Worker ──────────────────────────────────────── */
 if ('serviceWorker' in navigator) {
@@ -1520,114 +1715,102 @@ document.getElementById('logout-btn').addEventListener('click', () => {
 /* ══════════════════════════════════════════════════════════
    LOGIN VIEW — Google SSO (IFC-678)
 ══════════════════════════════════════════════════════════ */
-const GOOGLE_CLIENT_ID = '855240747767-vjh41atucabiji7vhltfbbh48731idj7.apps.googleusercontent.com';
-const USER_GQL    = '/api/user-graphql';
+const GOOGLE_CLIENT_ID = '459417822950-b44np97fd2vtj1d8foe1c81c2fqflh9c.apps.googleusercontent.com';
 
-const viewLogin   = document.getElementById('view-login');
-const googleBtn   = document.getElementById('google-btn');
-const loginError  = document.getElementById('login-error');
+const viewLogin  = document.getElementById('view-login');
+const googleBtn  = document.getElementById('google-btn');
+const loginError = document.getElementById('login-error');
 
-const SIGN_IN_MUTATION = `
-  mutation GoogleSignIn($input: SignInUserInput!) {
-    signIn(input: $input) {
-      token
-      user { id name email }
-    }
-  }
-`;
+/* ── Google Sign-In: decode JWT email → match IFC user ──── */
+function decodeJwtPayload(token) {
+  const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+  return JSON.parse(atob(base64));
+}
 
-/* ── GIS credential callback ─────────────────────────────── */
+const USERS_QUERY = '{ users(scoreboard: false) { id name email } }';
+
 window.handleGoogleCredential = async function(response) {
   setLoginLoading(true);
   hideLoginError();
   try {
-    const res = await fetch('/api/graphql', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        query: SIGN_IN_MUTATION,
-        variables: { input: { googleToken: response.credential } }
-      })
-    });
-    const json = await res.json();
-    if (json.errors?.length) throw new Error(json.errors[0].message);
-    const { token, user } = json.data.signIn;
-    if (!token || !user) throw new Error('Sign-in failed — no token returned');
-    saveUser({ ...user, token });
+    // 1. Decode the Google ID token to get email
+    const payload = decodeJwtPayload(response.credential);
+    const email = (payload.email || '').toLowerCase().trim();
+    if (!email) throw new Error('No email in Google token');
+
+    // 2. Fetch all IFC users and find by email
+    const data = await gql(USERS_QUERY, {}, false);
+    const users = data.users || [];
+    const user = users.find(u => (u.email || '').toLowerCase().trim() === email);
+
+    if (!user) throw new Error('not found');
+
+    // 3. Save user (use X-User-Id auth, no platform token needed)
+    saveUser({ id: user.id, name: user.name, email: user.email, token: 'user-id:' + user.id });
     enterApp();
   } catch (err) {
     console.error('Google SSO:', err);
-    showLoginError(err.message.includes('not found') || err.message.includes('not authorized')
-      ? 'Your Google account isn\'t linked to an IFC rep. Ask Oli to add you.'
-      : 'Sign-in failed. Try again.');
+    showLoginError(
+      /not found/i.test(err.message)
+        ? "Your Google account isn't linked to an IFC rep. Ask Oli to add you."
+        : 'Sign-in failed. Try again.'
+    );
     setLoginLoading(false);
   }
 };
 
-/* ── Trigger GIS account picker ─────────────────────────── */
+/* ── Manual button click → GIS account picker ───────────── */
 googleBtn.addEventListener('click', () => {
   hideLoginError();
-  if (typeof google === 'undefined' || !google.accounts) {
-    showLoginError('Google Sign-In not loaded yet. Check your connection.');
+  if (typeof google === 'undefined' || !google.accounts?.id) {
+    showLoginError('Google Sign-In not loaded. Check your connection.');
     return;
   }
   google.accounts.id.prompt();
 });
 
 function setLoginLoading(on) {
-  googleBtn.classList.toggle('loading', on);
-  googleBtn.textContent = on ? 'Signing in…' : '';
-  if (!on) {
-    googleBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 48 48">
-      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-      <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-    </svg>Sign in with Google`;
-  }
+  googleBtn.disabled = on;
+  googleBtn.style.opacity = on ? '0.6' : '';
 }
 function showLoginError(msg) {
   loginError.textContent = msg;
-  loginError.classList.add('visible');
+  loginError.style.display = 'block';
 }
 function hideLoginError() {
-  loginError.classList.remove('visible');
+  loginError.style.display = 'none';
 }
 
-/* ── Init GIS when script loads ──────────────────────────── */
+/* ── Init GIS (called once library is ready) ─────────────── */
 function initGoogleSignIn() {
-  if (typeof google === 'undefined' || !google.accounts) return;
+  if (typeof google === 'undefined' || !google.accounts?.id) return;
   google.accounts.id.initialize({
     client_id: GOOGLE_CLIENT_ID,
     callback: window.handleGoogleCredential,
     auto_select: false,
     cancel_on_tap_outside: true,
   });
+  // Render the official GIS button, then hide the fallback
+  google.accounts.id.renderButton(
+    document.getElementById('g_id_signin_btn'),
+    { theme: 'filled_black', size: 'large', shape: 'pill', width: 280 }
+  );
+  // Hide fallback button once GIS button is rendered
+  const fb = document.getElementById('google-btn');
+  if (fb) fb.style.display = 'none';
 }
 
-// Call once GIS is ready (script is async)
-if (typeof google !== 'undefined' && google.accounts) {
+// Fire init once — either now or when GIS loads
+let gisInitialized = false;
+function initGoogleOnce() {
+  if (gisInitialized) return;
+  gisInitialized = true;
   initGoogleSignIn();
-} else {
-  window.addEventListener('load', initGoogleSignIn);
 }
-
-/* ── Authenticated GQL (uses user's own Bearer token) ────── */
-async function userGql(query, variables = {}) {
-  if (!currentUser?.token) throw new Error('Not authenticated');
-  const res = await fetch(USER_GQL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${currentUser.token}`,
-    },
-    body: JSON.stringify({ query, variables }),
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const json = await res.json();
-  if (json.errors?.length) throw new Error(json.errors[0].message);
-  return json.data;
+if (typeof google !== 'undefined' && google.accounts?.id) {
+  initGoogleOnce();
 }
+window.onGoogleLibraryLoad = initGoogleOnce;
 
 /* ── Show / hide login view ──────────────────────────────── */
 function showLoginView() {
@@ -1636,20 +1819,229 @@ function showLoginView() {
   viewLogin.classList.remove('hidden');
   hideLoginError();
   setLoginLoading(false);
-  // Init GIS in case script loaded after initial call
-  initGoogleSignIn();
+  initGoogleSignIn(); // re-render button if GIS loaded after initial hide
 }
 
 function enterApp() {
   viewLogin.classList.add('hidden');
   viewList.style.display = '';
+  updateListHeader();
   allProjects = [];
   pipelineProjects = [];
   pipelineLoaded = false;
   loadProjects();
 }
 
+/* ══════════════════════════════════════════════════════════
+   PHASE 6 — WILL'S FEEDBACK FEATURES (IFC-731)
+══════════════════════════════════════════════════════════ */
+
+/* ── 1. Pin projects to top ──────────────────────────────── */
+const PINS_KEY = 'clarity_pinned_projects';
+let pinnedIds = new Set();
+
+function loadPins() {
+  try {
+    const raw = localStorage.getItem(PINS_KEY);
+    if (raw) pinnedIds = new Set(JSON.parse(raw));
+  } catch (e) { pinnedIds = new Set(); }
+}
+
+function savePins() {
+  localStorage.setItem(PINS_KEY, JSON.stringify([...pinnedIds]));
+}
+
+function togglePin(projectId) {
+  const id = String(projectId);
+  if (pinnedIds.has(id)) {
+    pinnedIds.delete(id);
+  } else {
+    pinnedIds.add(id);
+  }
+  savePins();
+  // Re-render list in place (fast — already loaded)
+  if (allProjects.length) renderList(allProjects);
+}
+
+/* ── 2. Jump to project in IFC App ───────────────────────── */
+const jumpBtn = document.getElementById('jump-to-app-btn');
+jumpBtn.addEventListener('click', () => {
+  if (!activeProject) return;
+  const jnid = activeProject.jnid;
+  const id   = activeProject.id;
+  // jnid-based URL is primary; fall back to id-based
+  const url = jnid
+    ? `https://app.ifcroofing.com/projects/${jnid}`
+    : `https://app.ifcroofing.com/projects/${id}`;
+  window.open(url, '_blank', 'noopener');
+});
+
+/* ── 3. Agent tab bar ────────────────────────────────────── */
+const agentTabBar = document.getElementById('agent-tab-bar');
+
+// Tab → room id mapping (populated when chat opens)
+const AGENT_TABS = [
+  { key: 'clarity',      label: 'CLARITY'  },
+  { key: 'insurance',    label: 'SUP'       },
+  { key: 'construction', label: 'BUILD'     },
+  { key: 'client',       label: 'CALLING'   },
+  { key: 'upgrade',      label: 'UPGRADE'   },
+  { key: 'order',        label: 'ORDER'     },
+];
+
+let activeAgentTab = 'clarity';
+
+function setActiveAgentTab(key) {
+  activeAgentTab = key;
+  agentTabBar.querySelectorAll('.agent-tab').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === key);
+  });
+
+  if (!activeProject) return;
+
+  // Resolve which room to load
+  const roomId = getAgentRoomId(key);
+
+  clearPolling();
+  msgContent.innerHTML = '';
+  typingEl.style.display = 'none';
+
+  if (roomId) {
+    showChatLoading();
+    fetchMessages(roomId);
+    activeProject.activeRoomId = roomId;
+  } else {
+    // Tab with no room yet — show contextual placeholder
+    const tabLabels = { clarity: 'Clarity', insurance: 'Supplement', construction: 'Build', client: 'Calling', upgrade: 'Upgrade', order: 'Order' };
+    msgContent.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 24px;gap:8px;">
+        <div style="font-size:28px">💬</div>
+        <div style="font-size:13px;color:#636366;text-align:center">No ${tabLabels[key] || key} conversation yet.</div>
+      </div>`;
+    requestAnimationFrame(() => requestAnimationFrame(() => scrollToBottom(false)));
+  }
+}
+
+function getAgentRoomId(tab) {
+  if (!activeProject) return null;
+  switch (tab) {
+    case 'clarity':      return activeProject.roomId || null;
+    case 'insurance':    return activeProject.insRoomId || null;
+    case 'construction':
+    case 'order':        return activeProject.bldRoomId || null;
+    case 'client':
+    case 'upgrade':      return activeProject.cliRoomId || null;
+    default:             return null;
+  }
+}
+
+// Wire up tab click events
+agentTabBar.addEventListener('click', e => {
+  const btn = e.target.closest('.agent-tab');
+  if (!btn) return;
+  setActiveAgentTab(btn.dataset.tab);
+});
+
+// Override sendMessage to use the active tab's room
+const _originalSendMessage = sendMessage;
+
+// Patch activeProject.roomId usage in sendMessage to respect active tab
+// (sendMessage already reads activeProject.roomId; we keep activeRoomId in sync)
+function sendMessageOnActiveTab() {
+  if (!activeProject) return;
+  const roomId = getAgentRoomId(activeAgentTab);
+  if (!roomId) {
+    showToast('No chat room for this tab yet.');
+    return;
+  }
+  // Temporarily override roomId so sendMessage uses the right room
+  const saved = activeProject.roomId;
+  activeProject.roomId = roomId;
+  sendMessage();
+  activeProject.roomId = saved;
+}
+
+// Re-bind send button and enter key to use tab-aware send
+document.getElementById('send-btn').removeEventListener('click', sendMessage);
+document.getElementById('send-btn').addEventListener('click', sendMessageOnActiveTab);
+document.getElementById('msg-input').removeEventListener('keydown', () => {});
+
+/* ── 4. Global agent chips ───────────────────────────────── */
+// Map agent key → userGlobalChatRooms topic
+const AGENT_ROOM_TOPICS = {
+  clarity:  null,       // user's primary global clarity room (no topic / topic=null)
+  mark:     'Mark',
+  guide:    'Guide',
+  feedback: 'IFC Feedback',
+};
+
+let globalRoomsCache = null;
+
+async function loadGlobalRooms() {
+  if (globalRoomsCache) return globalRoomsCache;
+  try {
+    const data = await gql('{ userGlobalChatRooms { id topic chatType } }');
+    globalRoomsCache = data.userGlobalChatRooms || [];
+    return globalRoomsCache;
+  } catch (e) {
+    return [];
+  }
+}
+
+function findGlobalRoom(rooms, agent) {
+  const topic = AGENT_ROOM_TOPICS[agent];
+  if (topic === null) {
+    // primary global clarity room — no topic or the first global_chat room
+    return rooms.find(r => !r.topic || r.topic.toLowerCase().includes('clarity') || r.topic.toLowerCase().includes('global')) || rooms[0] || null;
+  }
+  return rooms.find(r => r.topic?.toLowerCase() === topic.toLowerCase()) || null;
+}
+
+document.querySelectorAll('.gallery-item.agent-clickable').forEach(chip => {
+  chip.addEventListener('click', async () => {
+    const agent = chip.dataset.agent;
+    if (!agent) return;
+
+    // Use a fake item to open the global chat view
+    const rooms = await loadGlobalRooms();
+    const room  = findGlobalRoom(rooms, agent);
+
+    const agentNames = { clarity: 'Clarity', mark: 'Mark', guide: 'Guide', feedback: 'IFC Feedback' };
+    const agentBgs   = {
+      clarity:  'linear-gradient(135deg, #00305C, #0054A0)',
+      mark:     'linear-gradient(135deg, #1B6B3A, #2DA05A)',
+      guide:    'linear-gradient(135deg, #8B4513, #C6772E)',
+      feedback: 'linear-gradient(135deg, #7B1FA2, #AB47BC)',
+    };
+
+    const fake = { dataset: {
+      projectId: `agent-${agent}`,
+      jnid: '',
+      name: agentNames[agent] || agent,
+      stage: 'Global Agent',
+      statusColor: '',
+      roomId: room?.id || '',
+      insRoomId: '', bldRoomId: '', cliRoomId: '',
+      daysInStatus: '',
+      repName: '',
+    }};
+
+    // Hide agent tab bar for global chats (they don't have project room tabs)
+    agentTabBar.style.display = 'none';
+
+    // Override header avatar for agents
+    const fakeEl = { dataset: fake.dataset, querySelector: () => null };
+    await openChat(fake);
+
+    // Set avatar gradient
+    headerAvatar.style.background = agentBgs[agent] || agentBgs.clarity;
+    headerAvatar.textContent = agentNames[agent]?.[0] || '✦';
+    if (agent === 'clarity') headerAvatar.textContent = '✦';
+  });
+});
+
 /* ── Bootstrap ───────────────────────────────────────────── */
+loadPins();
 loadStoredUser();
 if (currentUser?.token) {
   viewLogin.classList.add('hidden');

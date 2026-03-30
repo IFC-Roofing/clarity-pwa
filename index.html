@@ -854,7 +854,7 @@ async function gql(query, variables = {}, useAuth = true) {
   const endpoint = useAuth ? USER_GQL : GQL;
   const headers  = { 'Content-Type': 'application/json' };
   if (useAuth && currentUser?.token) {
-    headers['Authorization'] = `Bearer ${currentUser.token}`;
+    headers['Authorization'] = currentUser.token.startsWith('user-id:') ? currentUser.token : `Bearer ${currentUser.token}`;
   }
   const res = await fetch(endpoint, {
     method: 'POST',

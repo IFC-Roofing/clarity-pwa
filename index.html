@@ -1510,30 +1510,37 @@ const viewLogin  = document.getElementById('view-login');
 const googleBtn  = document.getElementById('google-btn');
 const loginError = document.getElementById('login-error');
 
-/* signInUser mutation — /api/graphql, no auth required */
-const SIGN_IN_MUTATION = `
-  mutation SignInUser($googleToken: String!) {
-    signInUser(googleToken: $googleToken) {
-      token
-      user { id name email }
-    }
-  }
-`;
+/* ── Google Sign-In: decode JWT email → match IFC user ──── */
+function decodeJwtPayload(token) {
+  const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+  return JSON.parse(atob(base64));
+}
 
-/* ── GIS credential callback ─────────────────────────────── */
+const USERS_QUERY = '{ users { id name email } }';
+
 window.handleGoogleCredential = async function(response) {
   setLoginLoading(true);
   hideLoginError();
   try {
-    const data = await gql(SIGN_IN_MUTATION, { googleToken: response.credential }, false);
-    const { token, user } = data.signInUser;
-    if (!token || !user) throw new Error('Sign-in failed — no token returned');
-    saveUser({ ...user, token });
+    // 1. Decode the Google ID token to get email
+    const payload = decodeJwtPayload(response.credential);
+    const email = (payload.email || '').toLowerCase().trim();
+    if (!email) throw new Error('No email in Google token');
+
+    // 2. Fetch all IFC users and find by email
+    const data = await gql(USERS_QUERY, {}, false);
+    const users = data.users || [];
+    const user = users.find(u => (u.email || '').toLowerCase().trim() === email);
+
+    if (!user) throw new Error('not found');
+
+    // 3. Save user (use X-User-Id auth, no platform token needed)
+    saveUser({ id: user.id, name: user.name, email: user.email, token: 'user-id:' + user.id });
     enterApp();
   } catch (err) {
     console.error('Google SSO:', err);
     showLoginError(
-      /not found|not authorized|no account/i.test(err.message)
+      /not found/i.test(err.message)
         ? "Your Google account isn't linked to an IFC rep. Ask Oli to add you."
         : 'Sign-in failed. Try again.'
     );

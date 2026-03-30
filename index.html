@@ -1054,7 +1054,7 @@ function sanitizeHtml(rawHtml) {
         const tag = child.tagName.toLowerCase();
 
         // Convert resource-link spans → real <a> elements first
-        if (tag === 'span' && child.hasAttribute('data-resource-type')) {
+        if ((tag === 'span' || tag === 'a') && child.hasAttribute('data-resource-type')) {
           const resType  = child.getAttribute('data-resource-type') || '';
           const resId    = child.getAttribute('data-resource-id')   || '';
           const label    = child.textContent.trim() || resType;
@@ -2276,6 +2276,16 @@ document.querySelectorAll('.gallery-item.agent-clickable').forEach(chip => {
     headerAvatar.textContent = agentNames[agent]?.[0] || '✦';
     if (agent === 'clarity') headerAvatar.textContent = '✦';
   });
+});
+
+
+/* ── Resource link click handler (PWA-safe) ─────────────── */
+document.addEventListener('click', e => {
+  const link = e.target.closest('a.resource-link, a[data-resource-type]');
+  if (!link) return;
+  e.preventDefault();
+  const url = link.href || link.getAttribute('data-resource-href');
+  if (url) window.open(url, '_blank', 'noopener,noreferrer');
 });
 
 /* ── Bootstrap ───────────────────────────────────────────── */

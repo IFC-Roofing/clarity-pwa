@@ -54,7 +54,7 @@ body {
 #view-chat.active { transform: translateX(0); }
 
 /* ─── Status Bar (browser only) ─────────────────────────── */
-.status-bar {
+.status-bar { display: none !important; visibility: hidden; height: 0; overflow: hidden; }
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -62,7 +62,7 @@ body {
   font-size: 14px; font-weight: 600;
   flex-shrink: 0;
 }
-@media all and (display-mode: standalone) { .status-bar { display: none; } }
+.status-bar { display: none !important; visibility: hidden; height: 0; overflow: hidden; }
 
 /* ─── List View: Header ─────────────────────────────────── */
 .list-header { flex-shrink: 0; }
@@ -622,11 +622,9 @@ body {
 <div id="view-list" class="view">
 
   <div class="list-header">
-    <div class="status-bar">
       <span id="status-time">9:41</span>
       <span style="font-size:11px;color:#8e8e93">clarity.ifcroofing.com</span>
       <span>📶 🔋</span>
-    </div>
     <div class="header">
       <div>
         <div class="header-title">Clarity</div>
@@ -788,11 +786,9 @@ body {
 <div id="view-pipeline" class="view">
 
   <div class="list-header">
-    <div class="status-bar">
       <span id="pipeline-status-time">9:41</span>
       <span style="font-size:11px;color:#8e8e93">clarity.ifcroofing.com</span>
       <span>📶 🔋</span>
-    </div>
     <div class="pipeline-header">
       <div class="pipeline-title">Pipeline</div>
     </div>

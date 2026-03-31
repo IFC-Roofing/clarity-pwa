@@ -2685,6 +2685,10 @@ loadPins();
 loadStoredUser();
 if (currentUser?.token) {
   updateAppBadge(0); // Clear badge on app open
+  // Request notification permission (needed for Android icon badges)
+  if ('Notification' in window && Notification.permission === 'default') {
+    setTimeout(() => Notification.requestPermission(), 2000);
+  }
   viewLogin.classList.add('hidden');
   loadProjects();
 } else {

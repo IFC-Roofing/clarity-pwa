@@ -1,4 +1,4 @@
-const CACHE_NAME = 'clarity-v3';
+const CACHE_NAME = 'clarity-v4';
 
 self.addEventListener('install', e => {
   self.skipWaiting(); // Activate immediately, don't wait

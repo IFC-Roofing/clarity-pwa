@@ -2,6 +2,19 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script>
+// Force clear old service worker caches
+if ('caches' in window) {
+  caches.keys().then(keys => keys.forEach(k => {
+    if (k !== 'clarity-v4') caches.delete(k);
+  }));
+}
+// Force SW update
+if (navigator.serviceWorker?.controller) {
+  navigator.serviceWorker.ready.then(reg => reg.update());
+}
+</script>
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Clarity</title>
 

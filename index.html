@@ -2475,6 +2475,8 @@ function loadLastRead() {
   try { lastReadMap = JSON.parse(localStorage.getItem(READ_KEY) || '{}'); } catch(e) { lastReadMap = {}; }
 }
 function markRoomRead(roomId) {
+  // Recalculate total unread after marking read
+  setTimeout(() => { try { const total = document.querySelectorAll(".chat-item.has-unread").length; updateAppBadge(total); } catch(e){} }, 100);
   lastReadMap[String(roomId)] = new Date().toISOString();
   localStorage.setItem(READ_KEY, JSON.stringify(lastReadMap));
 }
@@ -2495,6 +2497,7 @@ function updateUnreadBadges(projects) {
   });
   badge.textContent = String(count);
   badge.style.display = count > 0 ? '' : 'none';
+  updateAppBadge(count);
 }
 
 
@@ -2664,11 +2667,24 @@ if (subToggle) {
 }
 updateSubToggle();
 
+
+/* ── App Icon Badge (iOS 16.4+ PWA) ─────────────────────── */
+function updateAppBadge(count) {
+  if ('setAppBadge' in navigator) {
+    if (count > 0) {
+      navigator.setAppBadge(count).catch(() => {});
+    } else {
+      navigator.clearAppBadge().catch(() => {});
+    }
+  }
+}
+
 /* ── Bootstrap ───────────────────────────────────────────── */
 loadLastRead();
 loadPins();
 loadStoredUser();
 if (currentUser?.token) {
+  updateAppBadge(0); // Clear badge on app open
   viewLogin.classList.add('hidden');
   loadProjects();
 } else {

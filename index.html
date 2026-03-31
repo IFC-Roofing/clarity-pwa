@@ -1749,23 +1749,32 @@ async function openChat(item) {
   typingEl.style.display = 'none';
 
   const projectId = item.dataset.projectId;
+  const isRealProject = projectId && !projectId.startsWith('agent-') && !projectId.startsWith('sub-');
   showChatLoading();
-  try {
+
+  if (isRealProject) {
     // Resolve the correct user-scoped room (same as app Clarity tab)
-    const roomData = await gql(RESOLVE_ROOM_QUERY, { projectId: String(projectId) });
-    const resolvedRoomId = roomData.projectGeneralChatRoom?.id;
-    if (resolvedRoomId) {
-      activeProject.roomId = resolvedRoomId;
-      fetchMessages(resolvedRoomId);
-    } else if (roomId) {
-      fetchMessages(roomId);
-    } else {
-      showNoRoomState(name, stage, days);
+    try {
+      const roomData = await gql(RESOLVE_ROOM_QUERY, { projectId: String(projectId) });
+      const resolvedRoomId = roomData.projectGeneralChatRoom?.id;
+      if (resolvedRoomId) {
+        activeProject.roomId = resolvedRoomId;
+        fetchMessages(resolvedRoomId);
+      } else if (roomId) {
+        fetchMessages(roomId);
+      } else {
+        showNoRoomState(name, stage, days);
+      }
+    } catch (err) {
+      console.warn('resolveRoom failed:', err);
+      if (roomId) { fetchMessages(roomId); }
+      else { showNoRoomState(name, stage, days); }
     }
-  } catch (err) {
-    console.warn('resolveRoom failed:', err);
-    if (roomId) { fetchMessages(roomId); }
-    else { showNoRoomState(name, stage, days); }
+  } else if (roomId) {
+    // Global agent or sub-conversation — roomId is already set
+    fetchMessages(roomId);
+  } else {
+    showNoRoomState(name, stage, days);
   }
 }
 

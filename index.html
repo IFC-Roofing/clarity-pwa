@@ -2917,6 +2917,216 @@ function openProjectFromPipeline(item) {
   }};
   openChat(fake);
 }
+
+/* ══════════════════════════════════════════════════════════
+   REACH SLIDE-OUT PANEL — "Text in Reach" (IFC-713)
+   Opens as overlay on top of current page so user keeps
+   project context visible behind the panel.
+══════════════════════════════════════════════════════════ */
+const reachBackdrop  = document.getElementById('reach-backdrop');
+const reachPanel     = document.getElementById('reach-panel');
+const reachCloseBtn  = document.getElementById('reach-close-btn');
+const reachTextBtn   = document.getElementById('reach-text-btn');
+const reachContactAvatar = document.getElementById('reach-contact-avatar');
+const reachContactName   = document.getElementById('reach-contact-name');
+const reachContactPhone  = document.getElementById('reach-contact-phone');
+const reachContactStage  = document.getElementById('reach-contact-stage');
+const reachPhoneInput    = document.getElementById('reach-phone-input');
+const reachTextarea      = document.getElementById('reach-compose-textarea');
+const reachCharCount     = document.getElementById('reach-char-count');
+const reachSendBtn       = document.getElementById('reach-send-btn');
+const reachStatus        = document.getElementById('reach-status');
+const reachTemplateChips = document.getElementById('reach-template-chips');
+
+let reachContext = null; // { projectId, contactName, contactPhone, stage }
+
+/* ── SMS templates (contextual — project name injected) ─── */
+const SMS_TEMPLATES = {
+  followup: (name) => `Hi ${name}, this is IFC Roofing following up on your project. Do you have a few minutes to chat? We'd like to give you a quick update.`,
+  schedule: (name) => `Hi ${name}, we'd like to schedule your inspection. What day and time works best for you this week?`,
+  adjuster: (name) => `Hi ${name}, just a heads up — the insurance adjuster is scheduled. We'll be there to make sure everything is documented properly.`,
+  payment:  (name) => `Hi ${name}, this is IFC Roofing. We wanted to follow up regarding the payment on your project. Please give us a call when you get a chance.`,
+  thanks:   (name) => `Hi ${name}, thank you for choosing IFC Roofing! If you have any questions about your project, don't hesitate to reach out.`,
+};
+
+/* ── Open Reach panel ────────────────────────────────────── */
+function openReachPanel() {
+  if (!activeProject) return;
+
+  // Find contact info from the loaded projects list
+  const proj = allProjects.find(p => p.id === activeProject.id);
+  const contactName  = proj?.contact?.name || activeProject.name || 'Homeowner';
+  const contactPhone = proj?.contact?.phone || proj?.contact?.cellPhone || '';
+  const firstName    = contactName.split(/\s+/)[0] || 'there';
+
+  reachContext = {
+    projectId:    activeProject.id,
+    contactName,
+    contactPhone,
+    stage:        activeProject.stage,
+    firstName,
+  };
+
+  // Populate contact card
+  const bg   = avatarColor(contactName);
+  const init = initials(contactName);
+  reachContactAvatar.style.background = bg;
+  reachContactAvatar.textContent = init;
+  reachContactName.textContent   = contactName;
+  reachContactPhone.textContent  = contactPhone || 'No phone on file';
+  reachContactStage.textContent  = activeProject.stage
+    ? `${activeProject.stage} · ${activeProject.daysInStatus || '0'}d`
+    : '';
+
+  // Pre-fill phone
+  reachPhoneInput.value = contactPhone || '';
+
+  // Clear compose
+  reachTextarea.value = '';
+  updateReachCharCount();
+  reachSendBtn.disabled = true;
+  reachStatus.className = 'reach-status';
+  reachStatus.textContent = '';
+
+  // Slide open
+  reachBackdrop.classList.add('visible');
+  reachPanel.classList.add('open');
+
+  // Focus phone if empty, else focus compose
+  requestAnimationFrame(() => {
+    if (!contactPhone) {
+      reachPhoneInput.focus();
+    } else {
+      reachTextarea.focus();
+    }
+  });
+}
+
+/* ── Close Reach panel ───────────────────────────────────── */
+function closeReachPanel() {
+  reachPanel.classList.remove('open');
+  reachBackdrop.classList.remove('visible');
+  reachContext = null;
+}
+
+/* ── Character count ─────────────────────────────────────── */
+function updateReachCharCount() {
+  const len = reachTextarea.value.length;
+  const segments = Math.ceil(len / 160) || 1;
+  reachCharCount.textContent = `${len} / ${segments * 160} (${segments} segment${segments > 1 ? 's' : ''})`;
+  reachCharCount.className = 'reach-char-count' + (len > 480 ? ' over' : len > 160 ? ' warn' : '');
+
+  // Enable send if we have phone + message
+  const hasPhone = reachPhoneInput.value.replace(/\D/g, '').length >= 10;
+  const hasMsg   = len > 0;
+  reachSendBtn.disabled = !(hasPhone && hasMsg);
+}
+
+/* ── Template chip click ─────────────────────────────────── */
+reachTemplateChips.addEventListener('click', e => {
+  const chip = e.target.closest('.reach-template-chip');
+  if (!chip) return;
+  const tplKey = chip.dataset.tpl;
+  const tplFn  = SMS_TEMPLATES[tplKey];
+  if (!tplFn || !reachContext) return;
+  reachTextarea.value = tplFn(reachContext.firstName);
+  updateReachCharCount();
+  reachTextarea.focus();
+});
+
+/* ── Format phone for display ────────────────────────────── */
+function formatPhone(raw) {
+  const digits = (raw || '').replace(/\D/g, '');
+  if (digits.length === 10) return `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6)}`;
+  if (digits.length === 11 && digits[0] === '1') return `+1 (${digits.slice(1,4)}) ${digits.slice(4,7)}-${digits.slice(7)}`;
+  return raw;
+}
+
+/* ── Send SMS via Reach ──────────────────────────────────── */
+async function sendReachSms() {
+  if (reachSendBtn.disabled || !reachContext) return;
+
+  const phone   = reachPhoneInput.value.replace(/\D/g, '');
+  const message = reachTextarea.value.trim();
+  if (phone.length < 10 || !message) return;
+
+  reachSendBtn.classList.add('sending');
+  reachSendBtn.innerHTML = '<div class="loading-spinner" style="width:20px;height:20px;border-width:2px;border-top-color:#fff;margin:0"></div> Sending…';
+  reachStatus.className = 'reach-status';
+  reachStatus.textContent = '';
+
+  try {
+    // POST to Reach SMS API
+    // The endpoint may vary — try the standard Reach send-sms mutation/endpoint
+    const SEND_SMS_MUTATION = `
+      mutation SendSms($input: SendSmsInput!) {
+        sendSms(input: $input) {
+          success
+          messageId
+          error
+        }
+      }
+    `;
+
+    const data = await gql(SEND_SMS_MUTATION, {
+      input: {
+        to: phone.length === 10 ? `+1${phone}` : `+${phone}`,
+        body: message,
+        projectId: reachContext.projectId,
+      }
+    });
+
+    const result = data?.sendSms;
+    if (result?.success) {
+      reachStatus.className = 'reach-status success';
+      reachStatus.textContent = `✓ SMS sent to ${formatPhone(reachPhoneInput.value)}`;
+      reachSendBtn.innerHTML = '<span class="reach-send-icon">✓</span> Sent!';
+      reachSendBtn.disabled = true;
+
+      // Auto-close after 2s
+      setTimeout(() => closeReachPanel(), 2000);
+    } else {
+      throw new Error(result?.error || 'Send failed');
+    }
+
+  } catch (err) {
+    console.error('Reach SMS error:', err);
+    reachStatus.className = 'reach-status error';
+    reachStatus.textContent = `⚠ ${err.message || 'Failed to send. Try again.'}`;
+    reachSendBtn.classList.remove('sending');
+    reachSendBtn.innerHTML = '<span class="reach-send-icon">📤</span> Send SMS via Reach';
+    reachSendBtn.disabled = false;
+  }
+}
+
+/* ── Event listeners ─────────────────────────────────────── */
+reachTextBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  openReachPanel();
+});
+
+reachCloseBtn.addEventListener('click', closeReachPanel);
+reachBackdrop.addEventListener('click', closeReachPanel);
+
+reachTextarea.addEventListener('input', updateReachCharCount);
+reachPhoneInput.addEventListener('input', updateReachCharCount);
+
+reachSendBtn.addEventListener('click', sendReachSms);
+
+// Ctrl/Cmd+Enter to send
+reachTextarea.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+    e.preventDefault();
+    sendReachSms();
+  }
+});
+
+// Escape to close
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && reachPanel.classList.contains('open')) {
+    closeReachPanel();
+  }
+});
 </script>
 </body>
 </html>

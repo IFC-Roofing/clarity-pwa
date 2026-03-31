@@ -282,10 +282,11 @@ body {
 /* Messages area */
 .messages-area {
   flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
-  padding: 8px 12px 4px; scroll-behavior: smooth;
+  padding: 8px 12px 8px; scroll-behavior: smooth;
+  min-height: 0;
 }
 .messages-area::-webkit-scrollbar { display: none; }
-#messages-content { display: flex; flex-direction: column; }
+#messages-content { display: flex; flex-direction: column; min-height: 100%; justify-content: flex-end; }
 
 /* Date divider */
 .msg-ts-divider {
@@ -417,7 +418,7 @@ a.resource-link:active { opacity: 0.65; }
 /* Chat loading */
 .chat-loading {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  flex: 1; gap: 10px;
+  flex: 1; gap: 10px; min-height: 200px;
 }
 .chat-loading .loading-spinner { border-top-color: #007AFF; }
 .chat-loading .loading-text { font-size: 13px; color: #636366; }
@@ -427,7 +428,7 @@ a.resource-link:active { opacity: 0.65; }
   flex-shrink: 0;
   background: rgba(0,0,0,0.96); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
   border-top: 1px solid rgba(255,255,255,0.07);
-  padding: 8px 12px calc(8px + env(safe-area-inset-bottom, 16px));
+  padding: 10px 12px calc(12px + env(safe-area-inset-bottom, 16px));
 }
 .input-row { display: flex; align-items: flex-end; gap: 8px; }
 .input-plus-btn {
@@ -440,7 +441,7 @@ a.resource-link:active { opacity: 0.65; }
 .input-plus-btn:active { opacity: 0.6; }
 .input-field-wrap {
   flex: 1; background: #1c1c1e; border-radius: 20px;
-  padding: 7px 14px;
+  padding: 8px 14px;
   display: flex; align-items: flex-end; min-height: 34px;
 }
 .input-field {
@@ -459,6 +460,259 @@ a.resource-link:active { opacity: 0.65; }
 }
 .send-btn:active { transform: scale(0.88); }
 .send-btn.inactive { background: #2c2c2e; opacity: 0.5; pointer-events: none; }
+
+/* ─── Sending-from indicator (IFC-713) ───────────────────── */
+.sending-from-bar {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px 2px;
+  font-size: 12px;
+  color: #8e8e93;
+  line-height: 1.3;
+}
+.sending-from-bar.visible { display: flex; }
+.sending-from-bar .from-icon { font-size: 13px; flex-shrink: 0; }
+.sending-from-bar .from-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sending-from-bar .from-number { color: #aaa; font-weight: 500; }
+.sending-from-bar .from-name { color: #007AFF; font-weight: 500; }
+.sending-from-selector {
+  background: none; border: 1px solid rgba(255,255,255,0.12); border-radius: 12px;
+  color: #8e8e93; font-size: 11px; padding: 2px 8px; margin-left: auto;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.sending-from-selector:active { opacity: 0.6; }
+
+/* ─── From-number picker modal (IFC-713) ─────────────────── */
+.from-picker-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.55); z-index: 9999;
+  align-items: flex-end; justify-content: center;
+}
+.from-picker-overlay.visible { display: flex; }
+.from-picker-sheet {
+  width: 100%; max-width: 430px; background: #1c1c1e;
+  border-radius: 14px 14px 0 0;
+  padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 16px));
+}
+.from-picker-title { font-size: 15px; font-weight: 600; color: #fff; text-align: center; margin-bottom: 12px; }
+.from-picker-item {
+  display: flex; align-items: center; gap: 10px; padding: 12px;
+  border-radius: 10px; cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.from-picker-item:active, .from-picker-item.selected { background: rgba(0,122,255,0.15); }
+.from-picker-item .fp-number { font-size: 15px; color: #fff; font-weight: 500; }
+.from-picker-item .fp-name { font-size: 13px; color: #8e8e93; }
+.from-picker-item .fp-check { margin-left: auto; color: #007AFF; font-size: 18px; }
+.from-picker-cancel {
+  display: block; width: 100%; margin-top: 8px; padding: 14px;
+  background: #2c2c2e; border: none; border-radius: 12px;
+  color: #007AFF; font-size: 16px; font-weight: 600;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.from-picker-cancel:active { opacity: 0.6; }
+
+/* ══════════════════════════════════════════════════════════ */
+/*  REACH SLIDE-OUT PANEL (IFC-713)                          */
+/* ══════════════════════════════════════════════════════════ */
+
+/* Backdrop — semi-transparent overlay behind the panel */
+.reach-backdrop {
+  position: absolute; inset: 0; z-index: 50;
+  background: rgba(0,0,0,0.5);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.reach-backdrop.visible { opacity: 1; pointer-events: auto; }
+
+/* Panel — slides in from right */
+.reach-panel {
+  position: absolute; top: 0; right: 0; bottom: 0;
+  width: 100%; max-width: 390px;
+  z-index: 51;
+  background: #000;
+  display: flex; flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.34s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: -4px 0 24px rgba(0,0,0,0.5);
+}
+.reach-panel.open { transform: translateX(0); }
+
+/* Panel header */
+.reach-panel-header {
+  flex-shrink: 0;
+  display: flex; align-items: center;
+  padding: 12px 16px;
+  background: rgba(10,10,10,0.97);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  gap: 10px;
+}
+.reach-close-btn {
+  display: flex; align-items: center; gap: 3px;
+  background: none; border: none; color: #007AFF;
+  cursor: pointer; padding: 6px 8px 6px 0;
+  -webkit-tap-highlight-color: transparent; flex-shrink: 0;
+  font-size: 15px; font-family: inherit;
+}
+.reach-close-btn:active { opacity: 0.55; }
+.reach-panel-title {
+  flex: 1; text-align: center;
+  font-size: 17px; font-weight: 600; color: #fff;
+}
+.reach-panel-action {
+  background: none; border: none; color: #007AFF;
+  font-size: 15px; font-weight: 600; font-family: inherit;
+  cursor: pointer; padding: 6px 0 6px 8px;
+  -webkit-tap-highlight-color: transparent; flex-shrink: 0;
+}
+.reach-panel-action:active { opacity: 0.55; }
+.reach-panel-action:disabled { color: #48484a; pointer-events: none; }
+
+/* Contact card at top of panel */
+.reach-contact-card {
+  flex-shrink: 0;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  display: flex; align-items: center; gap: 14px;
+}
+.reach-contact-avatar {
+  width: 48px; height: 48px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.reach-contact-info { flex: 1; min-width: 0; }
+.reach-contact-name {
+  font-size: 16px; font-weight: 600; color: #fff;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.reach-contact-phone {
+  font-size: 14px; color: #8e8e93; margin-top: 2px;
+}
+.reach-contact-stage {
+  font-size: 12px; color: #636366; margin-top: 2px;
+}
+
+/* Phone number input row */
+.reach-phone-row {
+  flex-shrink: 0;
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.reach-phone-label {
+  font-size: 11px; font-weight: 600; color: #636366;
+  text-transform: uppercase; letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+.reach-phone-input {
+  width: 100%; background: #1c1c1e; border: 1.5px solid #2c2c2e;
+  border-radius: 10px; padding: 10px 14px;
+  color: #fff; font-size: 15px; font-family: inherit; outline: none;
+  transition: border-color 0.2s;
+}
+.reach-phone-input:focus { border-color: #007AFF; }
+.reach-phone-input::placeholder { color: #48484a; }
+
+/* Template quick-picks */
+.reach-templates {
+  flex-shrink: 0;
+  padding: 10px 20px 6px;
+}
+.reach-templates-label {
+  font-size: 11px; font-weight: 600; color: #636366;
+  text-transform: uppercase; letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+.reach-template-chips {
+  display: flex; flex-wrap: wrap; gap: 6px;
+}
+.reach-template-chip {
+  background: rgba(0,122,255,0.12); color: #5AC8FA;
+  border: 1px solid rgba(90,200,250,0.2);
+  border-radius: 16px; padding: 6px 12px;
+  font-size: 12px; font-weight: 500; font-family: inherit;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s;
+}
+.reach-template-chip:active { background: rgba(0,122,255,0.25); }
+
+/* Message compose area */
+.reach-compose {
+  flex: 1; display: flex; flex-direction: column;
+  padding: 12px 20px;
+  min-height: 0;
+}
+.reach-compose-label {
+  font-size: 11px; font-weight: 600; color: #636366;
+  text-transform: uppercase; letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+.reach-compose-textarea {
+  flex: 1; width: 100%;
+  background: #1c1c1e; border: 1.5px solid #2c2c2e;
+  border-radius: 12px; padding: 12px 14px;
+  color: #fff; font-size: 15px; font-family: inherit;
+  line-height: 1.5; resize: none; outline: none;
+  min-height: 120px;
+  transition: border-color 0.2s;
+}
+.reach-compose-textarea:focus { border-color: #007AFF; }
+.reach-compose-textarea::placeholder { color: #48484a; }
+
+/* Character count */
+.reach-char-count {
+  font-size: 11px; color: #636366; text-align: right;
+  margin-top: 6px;
+}
+.reach-char-count.warn { color: #FF9500; }
+.reach-char-count.over { color: #FF3B30; }
+
+/* Send bar at bottom */
+.reach-send-bar {
+  flex-shrink: 0;
+  padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 16px));
+  border-top: 1px solid rgba(255,255,255,0.07);
+  background: rgba(10,10,10,0.97);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+}
+.reach-send-btn {
+  width: 100%; padding: 14px;
+  background: #34C759; color: #fff;
+  border: none; border-radius: 12px;
+  font-size: 16px; font-weight: 600; font-family: inherit;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: background 0.15s, opacity 0.15s, transform 0.1s;
+}
+.reach-send-btn:active { transform: scale(0.97); }
+.reach-send-btn:disabled { background: #2c2c2e; color: #636366; pointer-events: none; }
+.reach-send-btn.sending { background: #2DA05A; opacity: 0.7; pointer-events: none; }
+
+.reach-send-icon {
+  font-size: 18px;
+}
+
+/* Success / error toast inside panel */
+.reach-status {
+  padding: 10px 20px;
+  font-size: 13px; text-align: center;
+  display: none;
+}
+.reach-status.success { display: block; color: #34C759; }
+.reach-status.error   { display: block; color: #FF3B30; }
+
+/* ── Text in Reach button (chat header) ──────────────────── */
+.reach-text-btn {
+  display: flex; align-items: center; gap: 4px;
+  background: rgba(52,199,89,0.15); border: 1px solid rgba(52,199,89,0.3);
+  border-radius: 8px; padding: 5px 10px;
+  color: #34C759; font-size: 12px; font-weight: 600; font-family: inherit;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0; white-space: nowrap;
+  transition: background 0.15s;
+}
+.reach-text-btn:active { background: rgba(52,199,89,0.3); }
+.reach-text-btn svg { flex-shrink: 0; }
 
 /* Refresh indicator */
 .refresh-dot {
@@ -848,6 +1102,13 @@ a.resource-link:active { opacity: 0.65; }
       <div class="chat-contact-stage-sm" id="chat-header-stage"></div>
     </div>
 
+    <button class="reach-text-btn" id="reach-text-btn" title="Text in Reach">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" fill="#34C759"/>
+      </svg>
+      Text
+    </button>
+
     <button class="jump-to-app-btn" id="jump-to-app-btn" title="Open in IFC App">
       <span class="jump-to-app-icon">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -936,6 +1197,74 @@ a.resource-link:active { opacity: 0.65; }
 
 </div><!-- #view-pipeline -->
 
+
+<!-- ════════════════════════════════════════════════════════ -->
+<!--  REACH SLIDE-OUT PANEL (IFC-713)                       -->
+<!-- ════════════════════════════════════════════════════════ -->
+<div class="reach-backdrop" id="reach-backdrop"></div>
+<div class="reach-panel" id="reach-panel">
+
+  <!-- Header -->
+  <div class="reach-panel-header">
+    <button class="reach-close-btn" id="reach-close-btn">
+      <svg width="10" height="18" viewBox="0 0 10 18" fill="none">
+        <path d="M9 1L1 9L9 17" stroke="#007AFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Back
+    </button>
+    <div class="reach-panel-title">Text in Reach</div>
+    <div style="width:52px"></div><!-- spacer for centering -->
+  </div>
+
+  <!-- Contact card -->
+  <div class="reach-contact-card" id="reach-contact-card">
+    <div class="reach-contact-avatar" id="reach-contact-avatar"></div>
+    <div class="reach-contact-info">
+      <div class="reach-contact-name" id="reach-contact-name">—</div>
+      <div class="reach-contact-phone" id="reach-contact-phone">No phone on file</div>
+      <div class="reach-contact-stage" id="reach-contact-stage"></div>
+    </div>
+  </div>
+
+  <!-- Phone number input -->
+  <div class="reach-phone-row">
+    <div class="reach-phone-label">Send to</div>
+    <input class="reach-phone-input" id="reach-phone-input" type="tel"
+           placeholder="(555) 123-4567" autocomplete="tel" />
+  </div>
+
+  <!-- Template chips -->
+  <div class="reach-templates">
+    <div class="reach-templates-label">Quick templates</div>
+    <div class="reach-template-chips" id="reach-template-chips">
+      <button class="reach-template-chip" data-tpl="followup">📋 Follow-up</button>
+      <button class="reach-template-chip" data-tpl="schedule">📅 Schedule</button>
+      <button class="reach-template-chip" data-tpl="adjuster">🔍 Adjuster</button>
+      <button class="reach-template-chip" data-tpl="payment">💰 Payment</button>
+      <button class="reach-template-chip" data-tpl="thanks">🙏 Thank you</button>
+    </div>
+  </div>
+
+  <!-- Compose -->
+  <div class="reach-compose">
+    <div class="reach-compose-label">Message</div>
+    <textarea class="reach-compose-textarea" id="reach-compose-textarea"
+              placeholder="Type your SMS message…" maxlength="1600"></textarea>
+    <div class="reach-char-count" id="reach-char-count">0 / 160</div>
+  </div>
+
+  <!-- Status -->
+  <div class="reach-status" id="reach-status"></div>
+
+  <!-- Send bar -->
+  <div class="reach-send-bar">
+    <button class="reach-send-btn" id="reach-send-btn" disabled>
+      <span class="reach-send-icon">📤</span>
+      Send SMS via Reach
+    </button>
+  </div>
+
+</div><!-- .reach-panel -->
 
 </div><!-- #app -->
 
@@ -1575,7 +1904,7 @@ function showChatLoading() {
 
 function showNoRoomState(name, stage, days) {
   msgContent.innerHTML = `
-    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 24px;gap:8px;">
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:24px;gap:8px;">
       <div style="font-size:32px">💬</div>
       <div style="font-size:15px;font-weight:600;color:#fff">${escHtml(name)}</div>
       <div style="font-size:13px;color:#636366;text-align:center">${escHtml(stage)} · ${days} days<br>No Clarity conversation yet.</div>
@@ -1603,7 +1932,7 @@ function renderMessages(msgs) {
 
   if (!msgs.length) {
     msgContent.innerHTML = `
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 24px;gap:8px;">
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:24px;gap:8px;">
         <div style="font-size:32px">✦</div>
         <div style="font-size:13px;color:#636366;text-align:center">Start the conversation.<br>Ask Clarity anything about this project.</div>
       </div>`;

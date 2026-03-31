@@ -1789,6 +1789,18 @@ async function openChat(item) {
   } else {
     showNoRoomState(name, stage, days);
   }
+  // Mark room as read (from Phase 8)
+  const rid = activeProject?.roomId || item?.dataset?.roomId;
+  if (rid) {
+    markRoomRead(rid);
+    document.querySelectorAll('.chat-item.has-unread').forEach(el => {
+      if (el.dataset.roomId === rid) {
+        el.classList.remove('has-unread');
+        const badge = el.querySelector('.unread-badge');
+        if (badge) badge.remove();
+      }
+    });
+  }
 }
 
 function showChatLoading() {
@@ -2485,22 +2497,6 @@ function updateUnreadBadges(projects) {
   badge.style.display = count > 0 ? '' : 'none';
 }
 
-// Wrap openChat to mark room as read when opened
-const _openChatBase = openChat;
-async function openChat(item) {
-  await _openChatBase(item);
-  const rid = activeProject?.roomId || item?.dataset?.roomId;
-  if (rid) {
-    markRoomRead(rid);
-    document.querySelectorAll('.chat-item.has-unread').forEach(el => {
-      if (el.dataset.roomId === rid) {
-        el.classList.remove('has-unread');
-        el.querySelector('.chat-badge')?.remove();
-      }
-    });
-    updateUnreadBadges(allProjects);
-  }
-}
 
 /* ── Sub-conversations ───────────────────────────────────── */
 const subConvosSection = document.getElementById('sub-convos-section');
@@ -2564,7 +2560,7 @@ async function loadSubConvos() {
           daysInStatus: '', repName: '',
         }};
         if (typeof agentTabBar !== 'undefined') agentTabBar.style.display = 'none';
-        _openChatBase(fake).then(() => {
+        openChat(fake).then(() => {
           headerAvatar.style.background = 'linear-gradient(135deg,#00305C,#0054A0)';
           headerAvatar.textContent = isEmoji ? icon : (room.topic||'?').substring(0,2).toUpperCase();
         });

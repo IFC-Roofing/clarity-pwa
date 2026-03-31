@@ -909,8 +909,8 @@ body {
     <!-- Sub-conversations -->
     <div class="sub-convos-section" id="sub-convos-section" style="display:none">
       <div class="divider"></div>
-      <div class="section-label" style="display:flex;align-items:center">
-        Sub-conversations
+      <div class="section-label" id="sub-convos-toggle" style="display:flex;align-items:center;cursor:pointer;user-select:none">
+        Sub-conversations <span id="sub-toggle-arrow" style="font-size:10px;margin-left:4px">▼</span>
         <span id="sub-convos-unread-badge" class="unread-total-badge" style="display:none"></span>
       </div>
       <div id="sub-convos-list"></div>
@@ -2632,6 +2632,28 @@ function stopRecording() {
 }
 
 micBtn.addEventListener('click', startRecording);
+
+
+/* ── Sub-conversations collapse/expand toggle ────────────── */
+const subToggle = document.getElementById('sub-convos-toggle');
+const subToggleArrow = document.getElementById('sub-toggle-arrow');
+const subList = document.getElementById('sub-convos-list');
+let subCollapsed = localStorage.getItem('clarity_sub_collapsed') === 'true';
+
+function updateSubToggle() {
+  if (!subList || !subToggleArrow) return;
+  subList.style.display = subCollapsed ? 'none' : '';
+  subToggleArrow.textContent = subCollapsed ? '▶' : '▼';
+}
+
+if (subToggle) {
+  subToggle.addEventListener('click', () => {
+    subCollapsed = !subCollapsed;
+    localStorage.setItem('clarity_sub_collapsed', subCollapsed);
+    updateSubToggle();
+  });
+}
+updateSubToggle();
 
 /* ── Bootstrap ───────────────────────────────────────────── */
 loadLastRead();

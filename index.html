@@ -314,7 +314,7 @@ body {
 
 /* Bubble */
 .bubble {
-  max-width: min(82%, 340px);
+  max-width: min(72%, 290px);
   padding: 9px 14px; font-size: 15px; line-height: 1.45;
   word-break: break-word; white-space: pre-wrap;
 }
@@ -325,64 +325,108 @@ body {
 .bubble.received { background: #1c1c1e; color: #fff; border-radius: 18px; align-self: flex-start; }
 .bubble.received.tail { border-radius: 18px 18px 18px 5px; }
 
-/* ── Rich HTML in assistant bubbles (IFC-733) ────────────── */
-.bubble.received { white-space: normal; }
-.bubble.received h3,
-.bubble.received h4 {
-  font-size: 14px; font-weight: 700; color: #fff;
-  margin: 10px 0 5px; line-height: 1.3;
+/* ── Rich HTML bubbles ───────────────────────────────────── */
+.bubble.rich {
+  white-space: normal;
+  max-width: min(88%, 360px);
+  padding: 12px 16px;
 }
-.bubble.received h3:first-child,
-.bubble.received h4:first-child { margin-top: 0; }
-.bubble.received p { margin: 0 0 8px; line-height: 1.5; }
-.bubble.received p:last-child { margin-bottom: 0; }
-.bubble.received ul,
-.bubble.received ol { padding-left: 18px; margin: 6px 0 8px; }
-.bubble.received li  { margin-bottom: 4px; line-height: 1.45; }
-.bubble.received li:last-child { margin-bottom: 0; }
-.bubble.received table {
-  width: 100%; border-collapse: collapse;
-  font-size: 12px; margin: 8px 0; overflow: hidden;
+.bubble.rich h3 {
+  font-size: 15px; font-weight: 700; margin-bottom: 10px; line-height: 1.3;
+  color: #fff;
 }
-.bubble.received th,
-.bubble.received td {
-  padding: 6px 8px; text-align: left;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-  vertical-align: top;
+.bubble.rich h4 {
+  font-size: 13px; font-weight: 700; margin: 12px 0 6px;
+  color: #fff; text-transform: uppercase; letter-spacing: 0.3px;
 }
-.bubble.received th {
-  font-weight: 600; color: #8e8e93;
-  background: rgba(255,255,255,0.06);
-  font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px;
+.bubble.rich p { font-size: 14px; line-height: 1.55; margin-bottom: 8px; color: #e5e5e7; }
+.bubble.rich p:last-child { margin-bottom: 0; }
+.bubble.rich ol, .bubble.rich ul {
+  font-size: 14px; line-height: 1.55; padding-left: 18px; margin-bottom: 8px; color: #e5e5e7;
 }
-.bubble.received tr:last-child td { border-bottom: none; }
-.bubble.received strong,
-.bubble.received b { font-weight: 700; }
-.bubble.received em,
-.bubble.received i  { font-style: italic; }
+.bubble.rich li { margin-bottom: 5px; }
+.bubble.rich li:last-child { margin-bottom: 0; }
+.bubble.rich strong { font-weight: 700; color: #fff; }
+.bubble.rich em { font-style: italic; color: #aeaeb2; }
+.bubble.rich hr {
+  border: none; border-top: 1px solid rgba(255,255,255,0.1);
+  margin: 12px 0;
+}
+.bubble.rich br { display: block; content: ''; margin-bottom: 2px; }
 
-/* Resource deep links */
-a.resource-link {
-  color: #5AC8FA; text-decoration: none; font-weight: 500;
-  border-bottom: 1px solid rgba(90,200,250,0.3);
-  -webkit-tap-highlight-color: transparent;
+/* Resource links — project / contact / action_tracker */
+.bubble.rich .rl-project,
+.bubble.rich .rl-client,
+.bubble.rich .rl-contact,
+.bubble.rich .rl-action-tracker {
+  color: #5AC8FA; font-weight: 600; text-decoration: none; cursor: pointer;
 }
-a.resource-link:active { opacity: 0.65; }
+.bubble.rich .rl-project:active,
+.bubble.rich .rl-client:active,
+.bubble.rich .rl-contact:active,
+.bubble.rich .rl-action-tracker:active { opacity: 0.7; }
 
-/* Trade-tag pills */
-.trade-pill {
+/* Map links */
+.bubble.rich .rl-map {
+  color: #34C759; text-decoration: none; font-weight: 500;
+}
+.bubble.rich .rl-map:active { opacity: 0.7; }
+
+/* Calendar event links */
+.bubble.rich .rl-calendar {
+  color: #FF9F0A; text-decoration: none; font-weight: 500;
+}
+.bubble.rich .rl-calendar:active { opacity: 0.7; }
+
+/* @mention chips */
+.bubble.rich .mention-chip {
   display: inline-block;
-  padding: 2px 8px;
-  background: rgba(0,122,255,0.18);
-  color: #5AC8FA;
-  border: 1px solid rgba(90,200,250,0.28);
-  border-radius: 10px;
+  background: rgba(0,122,255,0.18); color: #5AC8FA;
   font-size: 12px; font-weight: 600;
-  letter-spacing: 0.1px;
-  margin: 1px 3px 1px 0;
-  vertical-align: middle;
-  white-space: nowrap;
+  padding: 1px 6px; border-radius: 10px;
+  cursor: pointer;
 }
+.bubble.rich .mention-chip:active { opacity: 0.7; }
+
+/* Footnote superscripts */
+.bubble.rich .cite-num {
+  display: inline-block;
+  font-size: 10px; font-weight: 700; color: #636366;
+  vertical-align: super; line-height: 1;
+  margin-left: 1px;
+  cursor: default;
+}
+.bubble.rich sup.cite-num { font-size: 10px; }
+
+/* Tooltip for footnotes (tap to see summary) */
+.cite-tooltip {
+  position: fixed; bottom: 80px; left: 16px; right: 16px;
+  background: #2c2c2e; border-radius: 12px;
+  padding: 12px 14px; font-size: 13px; color: #e5e5e7;
+  z-index: 200; line-height: 1.45;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  animation: fadeInUp 0.18s ease-out;
+}
+.cite-tooltip-label { font-weight: 700; color: #fff; margin-bottom: 4px; }
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Inline action buttons */
+.bubble.rich .inline-actions-container {
+  margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px;
+}
+.bubble.rich .inline-action-btn {
+  background: rgba(0,122,255,0.15); border: 1px solid rgba(0,122,255,0.3);
+  color: #5AC8FA; border-radius: 16px;
+  padding: 6px 12px; font-size: 12px; font-weight: 600;
+  font-family: inherit; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.12s;
+}
+.bubble.rich .inline-action-btn:active { background: rgba(0,122,255,0.28); }
+.bubble.rich .inline-action-btn__label { display: block; }
 
 /* Sender name above first bubble in group */
 .msg-sender-name {
@@ -474,6 +518,64 @@ a.resource-link:active { opacity: 0.65; }
 .chat-item.pinned-item { background: rgba(255,149,0,0.04); }
 .chat-item.pinned-item .chat-name::before {
   content: ""; /* pin indicator handled by button */
+}
+
+/* ── Unread badge on chat items ─────────────────────────── */
+.chat-badge {
+  position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+  background: #007AFF; color: #fff;
+  font-size: 11px; font-weight: 700; min-width: 20px; height: 20px;
+  border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  padding: 0 5px;
+}
+.chat-item.has-unread .chat-name { font-weight: 700; }
+.chat-item.has-unread .chat-preview { color: #aeaeb2; font-weight: 500; }
+.unread-total-badge {
+  background: #FF3B30; color: #fff; border-radius: 10px;
+  font-size: 11px; font-weight: 700; padding: 2px 7px; margin-left: 6px;
+  display: inline-block; vertical-align: middle;
+}
+
+/* ── Sub-conversations section ───────────────────────────── */
+.sub-convos-section { padding-bottom: 8px; }
+.sub-convo-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 20px; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.1s;
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+.sub-convo-item:active { background: #111; }
+.sub-convo-avatar {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(135deg, #00305C, #0054A0);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.sub-convo-info { flex: 1; min-width: 0; }
+.sub-convo-name {
+  font-size: 14px; font-weight: 600; color: #fff;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sub-convo-preview {
+  font-size: 12px; color: #636366;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sub-convo-time { font-size: 11px; color: #636366; flex-shrink: 0; }
+.sub-convo-item.has-unread .sub-convo-name { font-weight: 700; color: #fff; }
+
+/* ── Voice mic button ────────────────────────────────────── */
+.mic-btn {
+  width: 32px; height: 32px; border-radius: 50%; background: #1c1c1e; border: none;
+  color: #007AFF; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; flex-shrink: 0; -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s, color 0.15s;
+}
+.mic-btn.recording { background: #FF3B30; animation: mic-pulse 1.2s ease-in-out infinite; }
+.mic-btn:active { opacity: 0.7; }
+@keyframes mic-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,59,48,0.4); }
+  50%       { box-shadow: 0 0 0 8px rgba(255,59,48,0); }
 }
 
 /* ── Pin icon on chat items ──────────────────────────────── */
@@ -804,8 +906,21 @@ a.resource-link:active { opacity: 0.65; }
       </div>
     </div>
 
+    <!-- Sub-conversations -->
+    <div class="sub-convos-section" id="sub-convos-section" style="display:none">
+      <div class="divider"></div>
+      <div class="section-label" style="display:flex;align-items:center">
+        Sub-conversations
+        <span id="sub-convos-unread-badge" class="unread-total-badge" style="display:none"></span>
+      </div>
+      <div id="sub-convos-list"></div>
+    </div>
+
     <div class="divider"></div>
-    <div class="section-label">Project Clarities</div>
+    <div class="section-label" style="display:flex;align-items:center">
+      Project Clarities
+      <span id="projects-unread-badge" class="unread-total-badge" style="display:none"></span>
+    </div>
 
     <div class="chat-list" id="chat-list">
       <!-- Populated by JS from API -->
@@ -889,7 +1004,14 @@ a.resource-link:active { opacity: 0.65; }
   <!-- Input -->
   <div class="input-area">
     <div class="input-row">
-      <button class="input-plus-btn">+</button>
+      <button class="mic-btn" id="mic-btn" title="Voice input">
+        <svg width="16" height="18" viewBox="0 0 16 18" fill="none">
+          <rect x="5" y="1" width="6" height="10" rx="3" fill="#007AFF"/>
+          <path d="M2 8.5C2 12.09 4.69 15 8 15s6-2.91 6-6.5" stroke="#007AFF" stroke-width="1.8" stroke-linecap="round"/>
+          <line x1="8" y1="15" x2="8" y2="17" stroke="#007AFF" stroke-width="1.8" stroke-linecap="round"/>
+          <line x1="5" y1="17" x2="11" y2="17" stroke="#007AFF" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </button>
       <div class="input-field-wrap">
         <textarea
           class="input-field"
@@ -941,8 +1063,7 @@ a.resource-link:active { opacity: 0.65; }
 
 <script>
 /* ═══════════════════════════════════════════════════════════
-   Clarity PWA — Phase 7: Rich HTML rendering + resource links (IFC-733)
-   Phase 5: Google SSO Login (IFC-678)
+   Clarity PWA — Phase 5: Google SSO Login (IFC-678)
    • Login: Google Identity Services → signInUser mutation
    • Auth:  JWT Bearer token stored in localStorage
    • API:   all calls via /api/user-graphql (Authorization header)
@@ -1003,141 +1124,215 @@ async function gql(query, variables = {}, useAuth = true) {
   return json.data;
 }
 
-/* ── HTML → plain text (strip tags + decode entities) ───── */
-/* Used for list previews & user-message safety check only  */
+/* ── HTML → plain text (for list previews) ──────────────── */
 function stripHtml(html) {
   if (!html) return '';
-  // Remove inline-actions, cite markers, resource-link wrappers
   let text = html
     .replace(/<div class="inline-actions-container">[\s\S]*?<\/div>/gi, '')
     .replace(/<sup class="cite-marker"[^>]*>.*?<\/sup>/gi, '')
     .replace(/<[^>]+>/g, ' ')
     .replace(/\s{2,}/g, ' ')
     .trim();
-  // Decode HTML entities
   const ta = document.createElement('textarea');
   ta.innerHTML = text;
   return ta.value.trim();
 }
 
-/* ── Sanitize & enrich assistant HTML (IFC-733) ─────────── */
-/* Whitelist safe tags; convert resource-link data attrs to  */
-/* app.ifcroofing.com deep links; style trade tags as pills. */
-const ALLOWED_TAGS = new Set([
-  'h1','h2','h3','h4','h5','h6',
-  'p','br','hr',
-  'ul','ol','li',
-  'table','thead','tbody','tr','th','td',
-  'strong','b','em','i','u','s','code','pre',
-  'a','span','div',
-]);
-const ALLOWED_ATTRS = new Set(['href','target','rel','class','style','colspan','rowspan']);
+/* ── Project id→jnid cache (populated from LIST_QUERY results) ── */
+const jnidCache = new Map();  // numericId → jnid
 
-function sanitizeHtml(rawHtml) {
-  if (!rawHtml) return '';
+function cacheJnids(projects) {
+  (projects || []).forEach(p => {
+    if (p.jnid) jnidCache.set(String(p.id), p.jnid);
+  });
+}
 
-  // 1. Remove noise elements
-  let html = rawHtml
-    .replace(/<div class="inline-actions-container">[\s\S]*?<\/div>/gi, '')
-    .replace(/<sup class="cite-marker"[^>]*>.*?<\/sup>/gi, '');
+function projectUrl(id) {
+  const jnid = jnidCache.get(String(id));
+  return jnid
+    ? `https://app.ifcroofing.com/projects/${jnid}`
+    : `https://app.ifcroofing.com/projects/${id}`;
+}
 
-  // 2. Parse into a sandboxed document fragment
-  const template = document.createElement('template');
-  template.innerHTML = html;
-  const frag = template.content;
+/* ── Rich HTML renderer (IFC-733) ────────────────────────── */
+// Transforms Clarity's server HTML into safe, styled, clickable DOM.
+// Never uses innerHTML on the final bubble — builds DOM via a DOMParser
+// sandbox and then walks the tree to apply our styles.
 
-  // 3. Walk every element and scrub disallowed tags / attrs
-  function walk(node) {
-    const children = [...node.childNodes];
-    children.forEach(child => {
-      if (child.nodeType === Node.ELEMENT_NODE) {
-        const tag = child.tagName.toLowerCase();
+let activeCiteTooltip = null;
 
-        // Convert resource-link spans → real <a> elements first
-        if ((tag === 'span' || tag === 'a') && child.hasAttribute('data-resource-type')) {
-          const resType  = child.getAttribute('data-resource-type') || '';
-          const resId    = child.getAttribute('data-resource-id')   || '';
-          const label    = child.textContent.trim() || resType;
-          const url      = buildResourceUrl(resType, resId);
-          const a        = document.createElement('a');
-          a.href         = url;
-          a.target       = '_blank';
-          a.rel          = 'noopener noreferrer';
-          a.className    = 'resource-link';
-          a.textContent  = label;
-          child.replaceWith(a);
-          return; // already replaced — no need to descend
-        }
+function showCiteTooltip(label, summary) {
+  hideCiteTooltip();
+  const div = document.createElement('div');
+  div.className = 'cite-tooltip';
+  const cleanLabel   = stripHtml(label);
+  const cleanSummary = stripHtml(summary);
+  div.innerHTML = `<div class="cite-tooltip-label">${escHtml(cleanLabel)}</div>${escHtml(cleanSummary)}`;
+  document.body.appendChild(div);
+  activeCiteTooltip = div;
+  // Auto-dismiss after 4s or on tap anywhere
+  const dismiss = () => { hideCiteTooltip(); document.removeEventListener('click', dismiss); };
+  setTimeout(() => document.addEventListener('click', dismiss), 50);
+  setTimeout(hideCiteTooltip, 4000);
+}
 
-        // Convert trade-tag spans → pill spans
-        if (tag === 'span' && (child.getAttribute('data-type') === 'trade-tag' || /trade-tag/i.test(child.className))) {
-          const pill     = document.createElement('span');
-          pill.className = 'trade-pill';
-          pill.textContent = child.textContent.trim();
-          child.replaceWith(pill);
-          return;
-        }
+function hideCiteTooltip() {
+  if (activeCiteTooltip) { activeCiteTooltip.remove(); activeCiteTooltip = null; }
+}
 
-        // Strip disallowed tags (keep children)
-        if (!ALLOWED_TAGS.has(tag)) {
-          const parent = child.parentNode;
-          while (child.firstChild) parent.insertBefore(child.firstChild, child);
-          parent.removeChild(child);
-          return;
-        }
+function renderRichHtml(html, container) {
+  if (!html) return;
 
-        // Scrub disallowed attributes
-        const attrs = [...child.attributes];
-        attrs.forEach(attr => {
-          if (!ALLOWED_ATTRS.has(attr.name)) {
-            child.removeAttribute(attr.name);
-          }
-        });
+  // Parse into a sandboxed document
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const body = doc.body;
 
-        // Enforce safe hrefs on <a>
-        if (tag === 'a') {
-          const href = child.getAttribute('href') || '';
-          if (!/^https?:\/\//i.test(href) && !href.startsWith('/')) {
-            child.removeAttribute('href');
-          }
-          child.setAttribute('target', '_blank');
-          child.setAttribute('rel', 'noopener noreferrer');
-          if (!child.className) child.className = 'resource-link';
-        }
-
-        walk(child);
+  // Walk and transform nodes
+  function transformNode(src, dest) {
+    src.childNodes.forEach(node => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        dest.appendChild(document.createTextNode(node.textContent));
+        return;
       }
+      if (node.nodeType !== Node.ELEMENT_NODE) return;
+
+      const tag = node.tagName.toLowerCase();
+
+      // ── Strip entirely ──────────────────────────────────────────
+      if (tag === 'sup' && node.classList.contains('cite-marker')) {
+        // Render as a tappable footnote number
+        const n = document.createElement('sup');
+        n.className = 'cite-num';
+        n.textContent = node.textContent.trim();
+        const label   = node.dataset.sourceLabel   || '';
+        const summary = node.dataset.sourceSummary || '';
+        if (label || summary) {
+          n.style.cursor = 'pointer';
+          n.style.color  = '#007AFF';
+          n.addEventListener('click', e => {
+            e.stopPropagation();
+            showCiteTooltip(label, summary);
+          });
+        }
+        dest.appendChild(n);
+        return;
+      }
+
+      // ── Inline actions container ────────────────────────────────
+      if (node.classList.contains('inline-actions-container')) {
+        const wrap = document.createElement('div');
+        wrap.className = 'inline-actions-container';
+        node.querySelectorAll('.inline-action-btn').forEach(btn => {
+          const b = document.createElement('button');
+          b.className = 'inline-action-btn';
+          b.dataset.actionId = btn.dataset.actionId || '';
+          const labelEl = btn.querySelector('.inline-action-btn__label');
+          b.textContent = labelEl ? stripHtml(labelEl.innerHTML) : stripHtml(btn.innerHTML);
+          b.addEventListener('click', e => {
+            e.stopPropagation();
+            handleInlineAction(btn.dataset.actionId, b);
+          });
+          wrap.appendChild(b);
+        });
+        dest.appendChild(wrap);
+        return;
+      }
+
+      // ── Resource links ──────────────────────────────────────────
+      if (tag === 'a' && node.classList.contains('resource-link')) {
+        const type      = node.dataset.resourceType;
+        const id        = node.dataset.resourceId;
+        const projectId = node.dataset.resourceProjectId || node.dataset.sourceResourceId;
+        const href      = node.getAttribute('href') || node.dataset.resourceHref;
+
+        const a = document.createElement('a');
+        a.target  = '_blank';
+        a.rel     = 'noopener';
+
+        switch (type) {
+          case 'project':
+            a.className = 'rl-project';
+            a.href = projectUrl(id);
+            break;
+          case 'client':
+            a.className = 'rl-client';
+            a.href = projectUrl(id);
+            break;
+          case 'contact':
+            a.className = 'rl-contact';
+            a.href = `https://app.ifcroofing.com/contacts/${id}`;
+            break;
+          case 'action_tracker':
+            a.className = 'rl-action-tracker';
+            a.href = projectId
+              ? `https://app.ifcroofing.com/projects/${projectUrl(projectId).split('/').pop()}`
+              : projectUrl(id);
+            break;
+          case 'map':
+            a.className = 'rl-map';
+            a.href = href || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(node.textContent)}`;
+            break;
+          case 'calendar_event':
+            a.className = 'rl-calendar';
+            a.href = href || '#';
+            break;
+          default:
+            a.className = 'rl-default';
+            if (href) a.href = href;
+        }
+
+        // Inner content of the link (may contain @mention spans)
+        transformNode(node, a);
+        dest.appendChild(a);
+        return;
+      }
+
+      // ── @mention spans ──────────────────────────────────────────
+      if (tag === 'span' && node.classList.contains('user-mention-message')) {
+        const chip = document.createElement('span');
+        chip.className = 'mention-chip';
+        chip.textContent = node.textContent;
+        dest.appendChild(chip);
+        return;
+      }
+
+      // ── Structural elements — allow through with class stripping ─
+      const ALLOW = ['h3','h4','h5','p','ol','ul','li','strong','em','br','hr','div','span'];
+      if (ALLOW.includes(tag)) {
+        const el = document.createElement(tag);
+        // Strip all attributes except safe ones
+        if (tag === 'div' && node.style.cssText.includes('white-space')) {
+          // wrapper div — just unwrap
+          transformNode(node, dest);
+          return;
+        }
+        transformNode(node, el);
+        dest.appendChild(el);
+        return;
+      }
+
+      // Anything else — recurse into children without wrapper
+      transformNode(node, dest);
     });
   }
 
-  walk(frag);
-
-  // 4. Serialize back to string
-  const div = document.createElement('div');
-  div.appendChild(frag.cloneNode(true));
-  return div.innerHTML;
+  transformNode(body, container);
 }
 
-/* ── Build deep link URL for a given resource type + id ─── */
-function buildResourceUrl(type, id) {
-  const base = 'https://app.ifcroofing.com';
-  const t = (type || '').toLowerCase().replace(/\s+/g, '-');
-  if (!id) return base;
-  // Map known resource types to their app routes
-  const routes = {
-    project:       `${base}/projects/${id}`,
-    contact:       `${base}/contacts/${id}`,
-    user:          `${base}/users/${id}`,
-    task:          `${base}/tasks/${id}`,
-    ticket:        `${base}/tickets/${id}`,
-    estimate:      `${base}/estimates/${id}`,
-    invoice:       `${base}/invoices/${id}`,
-    supplement:    `${base}/supplements/${id}`,
-    'chat-room':   `${base}/chat/${id}`,
-    chatroom:      `${base}/chat/${id}`,
-    room:          `${base}/chat/${id}`,
-  };
-  return routes[t] || `${base}/${t}s/${id}`;
+/* ── Inline action handler ───────────────────────────────── */
+function handleInlineAction(actionId, btn) {
+  if (!actionId || !activeProject) return;
+  // Extract the verb from the action id (e.g. "draft_client_654_claim_filed" → "Draft @client text")
+  const label = btn.textContent;
+  // Pre-fill the input with a contextual message and let the rep send
+  const input = document.getElementById('msg-input');
+  if (input) {
+    input.value = label;
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 96) + 'px';
+    document.getElementById('send-btn')?.classList.remove('inactive');
+    input.focus();
+  }
 }
 
 /* ── Relative timestamp ──────────────────────────────────── */
@@ -1293,6 +1488,7 @@ async function loadProjects() {
   if (cached && cached.length) {
     allProjects = cached;
     renderList(allProjects);
+    updateUnreadBadges(allProjects);
     refreshDot.style.background = '#FF9500'; // orange = cached, refreshing
   } else {
     setListLoading();
@@ -1303,8 +1499,11 @@ async function loadProjects() {
     const mine = currentUser != null;
     const data = await gql(LIST_QUERY, { mine, page: "1", perPage: "50" });
     allProjects = data.projects.projects || [];
+    cacheJnids(allProjects);
     setCachedProjects(allProjects);
     renderList(allProjects);
+    updateUnreadBadges(allProjects);
+    loadSubConvos();
     refreshDot.style.background = '#34C759'; // green = fresh
   } catch (err) {
     if (!cached || !cached.length) {
@@ -1378,13 +1577,17 @@ function renderList(projects) {
       preview = `${stage} · ${p.daysInStatus || '0'} days`;
     }
 
-    const pinned   = pinnedIds.has(p.id);
+    const pinned    = pinnedIds.has(p.id);
     const insRoomId = p.insuranceRoom?.id || '';
     const bldRoomId = p.constructionRoom?.id || '';
     const cliRoomId = p.clientRoom?.id || '';
+    const lmTs      = p.projectGeneralChatRoom?.lastMessage?.createdAt;
+    const lmRole    = p.projectGeneralChatRoom?.lastMessage?.role;
+    const pRoomId   = p.projectGeneralChatRoom?.id;
+    const isUnread  = pRoomId && lmTs && lmRole === 'assistant' && isNewerThanLastRead(pRoomId, lmTs);
 
     const item = document.createElement('div');
-    item.className = 'chat-item' + (pinned ? ' pinned-item' : '');
+    item.className = 'chat-item' + (pinned ? ' pinned-item' : '') + (isUnread ? ' has-unread' : '');
     item.dataset.projectId    = p.id;
     item.dataset.jnid         = p.jnid || '';
     item.dataset.name         = nm;
@@ -1409,7 +1612,8 @@ function renderList(projects) {
         </div>
         <div class="chat-preview">${escHtml(preview.slice(0, 80))}</div>
       </div>
-      <button class="pin-btn${pinned ? ' pinned' : ''}" data-project-id="${p.id}" title="${pinned ? 'Unpin' : 'Pin to top'}"><svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M16,12V4H17V2H7V2H8V12L6,14V16H11.2V22H12.8V16H18V14L16,12M8.8,14L10,12.8V4H14V12.8L15.2,14H8.8Z"/></svg></button>`;
+      <button class="pin-btn${pinned ? ' pinned' : ''}" data-project-id="${p.id}" title="${pinned ? 'Unpin' : 'Pin to top'}"><svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M16,12V4H17V2H7V2H8V12L6,14V16H11.2V22H12.8V16H18V14L16,12M8.8,14L10,12.8V4H14V12.8L15.2,14H8.8Z"/></svg></button>
+      ${isUnread ? '<div class="chat-badge">●</div>' : ''}`;
 
     // Pin button — stop propagation so it doesn't open chat
     item.querySelector('.pin-btn').addEventListener('click', e => {
@@ -1517,11 +1721,10 @@ async function openChat(item) {
     activeRoomId: roomId,
   };
 
-  // Reset agent tab bar — show for projects, hide for global agents
+  // Reset agent tab bar to CLARITY tab for project chats
   activeAgentTab = 'clarity';
-  const isGlobalAgent = item.dataset.projectId?.startsWith('agent-');
   if (agentTabBar) {
-    agentTabBar.style.display = isGlobalAgent ? 'none' : '';
+    agentTabBar.style.display = '';
     agentTabBar.querySelectorAll('.agent-tab').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.tab === 'clarity');
     });
@@ -1619,10 +1822,8 @@ function renderMessages(msgs) {
   let lastRole = null;
 
   sorted.forEach((msg, i) => {
-    const role      = msg.role === 'assistant' ? 'received' : 'sent';
-    const isAssist  = role === 'received';
-    // For visibility checks use plain text; for rendering use sanitized HTML
-    const plain     = stripHtml(msg.content);
+    const role    = msg.role === 'assistant' ? 'received' : 'sent';
+    const plain   = stripHtml(msg.content);
     if (!plain) return;
 
     // Date divider — show if first message or >30 min gap
@@ -1660,12 +1861,12 @@ function renderMessages(msgs) {
     }
 
     const bubble = document.createElement('div');
-    bubble.className = `bubble ${role}${isLast ? ' tail' : ''}`;
-    if (isAssist) {
-      // Assistant messages: render sanitized HTML with rich formatting
-      bubble.innerHTML = sanitizeHtml(msg.content);
+    if (role === 'received' && msg.content && msg.content.includes('<')) {
+      // Rich HTML from Clarity — render as full rich bubble
+      bubble.className = `bubble ${role}${isLast ? ' tail' : ''} rich`;
+      renderRichHtml(msg.content, bubble);
     } else {
-      // User messages: always plain text — never render HTML
+      bubble.className = `bubble ${role}${isLast ? ' tail' : ''}`;
       bubble.textContent = plain;
     }
     row.appendChild(bubble);
@@ -2185,65 +2386,14 @@ function findGlobalRoom(rooms, agent) {
   return rooms.find(r => r.topic?.toLowerCase() === topic.toLowerCase()) || null;
 }
 
-
-/* ── Resolve global agent room (Mark, Guide, Feedback, Clarity) ── */
-const AGENT_CHAT_TYPES = { clarity: 'global_chat', mark: 'mark', guide: 'guide', feedback: 'feedback' };
-
-const GET_ROOMS_QUERY = `
-  query GetRooms($chattableId: ID!, $chattableType: String!, $chatType: String!) {
-    rooms(chattableId: $chattableId, chattableType: $chattableType, chatType: $chatType) {
-      rooms { id topic chatType }
-    }
-  }
-`;
-
-const CREATE_ROOM_MUTATION = `
-  mutation CreateRoom($input: CreateRoomInput!) {
-    createRoom(input: $input) {
-      room { id topic chatType }
-    }
-  }
-`;
-
-async function resolveGlobalAgentRoom(agent) {
-  const chatType = AGENT_CHAT_TYPES[agent] || 'global_chat';
-  const userId = currentUser?.id;
-  if (!userId) return null;
-
-  try {
-    // Try to find existing room
-    const data = await gql(GET_ROOMS_QUERY, {
-      chattableId: String(userId),
-      chattableType: 'User',
-      chatType: chatType,
-    });
-    const rooms = data.rooms?.rooms || [];
-    if (rooms.length > 0) return rooms[0];
-
-    // Create if not found
-    const createData = await gql(CREATE_ROOM_MUTATION, {
-      input: {
-        attributes: {
-          chattableType: 'User',
-          chattableId: String(userId),
-          chatType: chatType,
-        }
-      }
-    });
-    return createData.createRoom?.room || null;
-  } catch (e) {
-    console.warn('resolveGlobalAgentRoom:', e);
-    return null;
-  }
-}
-
 document.querySelectorAll('.gallery-item.agent-clickable').forEach(chip => {
   chip.addEventListener('click', async () => {
     const agent = chip.dataset.agent;
     if (!agent) return;
 
-    // Resolve the agent's global room (same as app)
-    const room = await resolveGlobalAgentRoom(agent);
+    // Use a fake item to open the global chat view
+    const rooms = await loadGlobalRooms();
+    const room  = findGlobalRoom(rooms, agent);
 
     const agentNames = { clarity: 'Clarity', mark: 'Mark', guide: 'Guide', feedback: 'IFC Feedback' };
     const agentBgs   = {
@@ -2279,17 +2429,203 @@ document.querySelectorAll('.gallery-item.agent-clickable').forEach(chip => {
   });
 });
 
+/* ══════════════════════════════════════════════════════════
+   PHASE 8 — UNREAD BADGES + SUB-CONVOS + VOICE (IFC-734)
+══════════════════════════════════════════════════════════ */
 
-/* ── Resource link click handler (PWA-safe) ─────────────── */
-document.addEventListener('click', e => {
-  const link = e.target.closest('a.resource-link, a[data-resource-type]');
-  if (!link) return;
-  e.preventDefault();
-  const url = link.href || link.getAttribute('data-resource-href');
-  if (url) window.open(url, '_blank', 'noopener,noreferrer');
-});
+/* ── Unread tracking ─────────────────────────────────────── */
+const READ_KEY = 'clarity_last_read';
+let lastReadMap = {};
+
+function loadLastRead() {
+  try { lastReadMap = JSON.parse(localStorage.getItem(READ_KEY) || '{}'); } catch(e) { lastReadMap = {}; }
+}
+function markRoomRead(roomId) {
+  lastReadMap[String(roomId)] = new Date().toISOString();
+  localStorage.setItem(READ_KEY, JSON.stringify(lastReadMap));
+}
+function isNewerThanLastRead(roomId, ts) {
+  const lastRead = lastReadMap[String(roomId)];
+  if (!lastRead) return true;
+  return new Date(ts) > new Date(lastRead);
+}
+
+function updateUnreadBadges(projects) {
+  const badge = document.getElementById('projects-unread-badge');
+  if (!badge) return;
+  let count = 0;
+  (projects || []).forEach(p => {
+    const lm  = p.projectGeneralChatRoom?.lastMessage;
+    const rid = p.projectGeneralChatRoom?.id;
+    if (rid && lm?.role === 'assistant' && isNewerThanLastRead(rid, lm.createdAt)) count++;
+  });
+  badge.textContent = String(count);
+  badge.style.display = count > 0 ? '' : 'none';
+}
+
+// Wrap openChat to mark room as read when opened
+const _openChatBase = openChat;
+async function openChat(item) {
+  await _openChatBase(item);
+  const rid = activeProject?.roomId || item?.dataset?.roomId;
+  if (rid) {
+    markRoomRead(rid);
+    document.querySelectorAll('.chat-item.has-unread').forEach(el => {
+      if (el.dataset.roomId === rid) {
+        el.classList.remove('has-unread');
+        el.querySelector('.chat-badge')?.remove();
+      }
+    });
+    updateUnreadBadges(allProjects);
+  }
+}
+
+/* ── Sub-conversations ───────────────────────────────────── */
+const subConvosSection = document.getElementById('sub-convos-section');
+const subConvosList    = document.getElementById('sub-convos-list');
+const subConvosBadge   = document.getElementById('sub-convos-unread-badge');
+
+const CONVO_ICONS = {
+  'Contact Clean Up':'📇', 'EMAIL':'📧', 'Task':'✅',
+  'PLAT':'🏗️', 'Marketing':'🎯', 'test':'🧪',
+};
+function subConvoIcon(topic) {
+  if (!topic) return '✦';
+  return CONVO_ICONS[topic] || topic.substring(0,2).toUpperCase();
+}
+
+async function loadSubConvos() {
+  try {
+    const data = await gql('{ userGlobalChatRooms { id topic chatType pinned lastMessage { id content createdAt role } } }');
+    const rooms = (data.userGlobalChatRooms || [])
+      .filter(r => r.topic)
+      .sort((a, b) => (b.lastMessage?.createdAt||'').localeCompare(a.lastMessage?.createdAt||''));
+
+    if (!rooms.length) { subConvosSection.style.display = 'none'; return; }
+
+    subConvosSection.style.display = '';
+    subConvosList.innerHTML = '';
+    let unreadCount = 0;
+    const frag = document.createDocumentFragment();
+
+    rooms.forEach(room => {
+      const lm       = room.lastMessage;
+      const isUnread = lm?.role === 'assistant' && isNewerThanLastRead(room.id, lm.createdAt);
+      if (isUnread) unreadCount++;
+
+      const preview = lm ? stripHtml(lm.content).slice(0, 70) : '';
+      const ts      = lm ? relativeTime(lm.createdAt) : '';
+      const icon    = subConvoIcon(room.topic);
+      const isEmoji = [...icon].length === 1 && icon.codePointAt(0) > 127;
+
+      const row = document.createElement('div');
+      row.className = 'sub-convo-item' + (isUnread ? ' has-unread' : '');
+      row.innerHTML = `
+        <div class="sub-convo-avatar" style="${isEmoji ? 'font-size:18px' : ''}">${escHtml(icon)}</div>
+        <div class="sub-convo-info">
+          <div class="sub-convo-name">${escHtml(room.topic)}</div>
+          <div class="sub-convo-preview">${escHtml(preview || 'No messages yet')}</div>
+        </div>
+        <div class="sub-convo-time">${escHtml(ts)}</div>`;
+
+      row.addEventListener('click', () => {
+        markRoomRead(room.id);
+        row.classList.remove('has-unread');
+        unreadCount = Math.max(0, unreadCount - 1);
+        subConvosBadge.textContent = String(unreadCount);
+        subConvosBadge.style.display = unreadCount > 0 ? '' : 'none';
+
+        const fake = { dataset: {
+          projectId: `sub-${room.id}`, jnid: '', name: room.topic || 'Sub-conversation',
+          stage: 'Sub-conversation', statusColor: '',
+          roomId: room.id, insRoomId: '', bldRoomId: '', cliRoomId: '',
+          daysInStatus: '', repName: '',
+        }};
+        if (typeof agentTabBar !== 'undefined') agentTabBar.style.display = 'none';
+        _openChatBase(fake).then(() => {
+          headerAvatar.style.background = 'linear-gradient(135deg,#00305C,#0054A0)';
+          headerAvatar.textContent = isEmoji ? icon : (room.topic||'?').substring(0,2).toUpperCase();
+        });
+      });
+
+      frag.appendChild(row);
+    });
+
+    subConvosList.appendChild(frag);
+    subConvosBadge.textContent = String(unreadCount);
+    subConvosBadge.style.display = unreadCount > 0 ? '' : 'none';
+  } catch(err) {
+    console.warn('loadSubConvos:', err);
+    subConvosSection.style.display = 'none';
+  }
+}
+
+/* ── Voice input ─────────────────────────────────────────── */
+const micBtn = document.getElementById('mic-btn');
+let recognition = null;
+let isRecording  = false;
+
+function startRecording() {
+  if (isRecording) { stopRecording(); return; }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { showToast('Voice input not supported on this device.'); return; }
+
+  recognition = new SR();
+  recognition.continuous     = false;
+  recognition.interimResults = true;
+  recognition.lang           = 'en-US';
+
+  const input = document.getElementById('msg-input');
+  const saved = input.value;
+
+  recognition.onstart = () => {
+    isRecording = true;
+    micBtn.classList.add('recording');
+    micBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 16 16"><rect x="3" y="3" width="10" height="10" rx="2" fill="#fff"/></svg>`;
+    input.placeholder = 'Listening…';
+  };
+
+  recognition.onresult = (event) => {
+    let final = '', interim = '';
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const t = event.results[i][0].transcript;
+      if (event.results[i].isFinal) final += t; else interim += t;
+    }
+    input.value = saved + (final || interim);
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 96) + 'px';
+    document.getElementById('send-btn')?.classList.toggle('inactive', !input.value.trim());
+  };
+
+  recognition.onerror = (e) => {
+    if (e.error !== 'aborted') showToast('Voice error: ' + e.error);
+    stopRecording();
+  };
+
+  recognition.onend = stopRecording;
+
+  try { recognition.start(); }
+  catch(e) { showToast('Could not start voice input.'); stopRecording(); }
+}
+
+function stopRecording() {
+  isRecording = false;
+  micBtn.classList.remove('recording');
+  micBtn.innerHTML = `<svg width="16" height="18" viewBox="0 0 16 18" fill="none">
+    <rect x="5" y="1" width="6" height="10" rx="3" fill="#007AFF"/>
+    <path d="M2 8.5C2 12.09 4.69 15 8 15s6-2.91 6-6.5" stroke="#007AFF" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="8" y1="15" x2="8" y2="17" stroke="#007AFF" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="5" y1="17" x2="11" y2="17" stroke="#007AFF" stroke-width="1.8" stroke-linecap="round"/>
+  </svg>`;
+  document.getElementById('msg-input').placeholder = 'Message Clarity…';
+  try { recognition?.stop(); } catch(e) {}
+  recognition = null;
+}
+
+micBtn.addEventListener('click', startRecording);
 
 /* ── Bootstrap ───────────────────────────────────────────── */
+loadLastRead();
 loadPins();
 loadStoredUser();
 if (currentUser?.token) {
